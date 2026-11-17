@@ -252,6 +252,9 @@
       }
       timerState.running = true;
       playSound('start');
+      if (window.VexIQSound && (!state.config || state.config.transitionSound !== false)) {
+        window.VexIQSound.startBgMusic();
+      }
       timerState.intervalId = setInterval(() => {
         if (timerState.remainingSec > 0) {
           timerState.remainingSec--;
@@ -297,6 +300,9 @@
 
   function stopTimer() {
     timerState.running = false;
+    if (window.VexIQSound) {
+      window.VexIQSound.stopBgMusic();
+    }
     if (timerState.intervalId) {
       clearInterval(timerState.intervalId);
       timerState.intervalId = null;
@@ -1035,6 +1041,78 @@
       <h2>BẢNG XẾP HẠNG &amp; KẾT QUẢ VÒNG 2 — TECH CLASH: FINALE 2026</h2>
       ${renderBracketTable('A', standings.A)}
       ${renderBracketTable('B', standings.B)}
+      </body></html>
+    `);
+    win.document.close();
+  }
+
+  function exportSchedulePDF() {
+    const win = window.open('', '_blank');
+    if (!win) {
+      showToast('Hãy cho phép mở cửa sổ Pop-up để tải Lịch Thi Đấu PDF!', 'warning');
+      return;
+    }
+
+    const rowsHtml = state.matches.map(m => {
+      const rT = getTeamById(m.redTeamId);
+      const bT = getTeamById(m.blueTeamId);
+      const stText = m.status === 'completed'
+        ? `<b>${m.redScore} - ${m.blueScore}</b>`
+        : (m.status === 'live' ? 'Đang thi' : 'Chưa thi');
+      return `
+        <tr>
+          <td><b>#${m.matchNumber}</b></td>
+          <td>Lượt ${m.wave}</td>
+          <td><span class="pill ${m.bracket === 'A' ? 'pa' : 'pb'}">${m.bracket === 'A' ? 'Bảng A (VEX GO)' : 'Bảng B (VEX IQ)'}</span></td>
+          <td style="text-align:left;background:#fff5f5;">
+            <b style="color:#b91c1c;">${rT.className}</b> <small>(${rT.code} • L${m.redTurn})</small><br/>
+            <span style="font-size:9pt;color:#334155;">${rT.student1} — ${rT.student2}</span>
+          </td>
+          <td style="text-align:left;background:#f0f9ff;">
+            <b style="color:#0369a1;">${bT.className}</b> <small>(${bT.code} • L${m.blueTurn})</small><br/>
+            <span style="font-size:9pt;color:#334155;">${bT.student1} — ${bT.student2}</span>
+          </td>
+          <td>${stText}</td>
+        </tr>
+      `;
+    }).join('');
+
+    win.document.write(`
+      <!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8">
+      <title>Lịch Thi Đấu Chính Thức - TECHCLASH 2026</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 20px; color: #0f172a; }
+        h2 { margin: 0 0 4px; color: #0f172a; }
+        .sub { font-size: 10pt; color: #475569; margin-bottom: 14px; }
+        table { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
+        th, td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: center; vertical-align: middle; }
+        th { background: #1e293b; color: #fff; font-weight: bold; }
+        .pill { padding: 2px 7px; border-radius: 4px; font-size: 8.5pt; font-weight: bold; }
+        .pa { background: #fef3c7; color: #b45309; }
+        .pb { background: #e0f2fe; color: #0369a1; }
+        @media print { .no-print { display: none; } }
+      </style></head><body>
+      <div class="no-print" style="text-align:right;margin-bottom:12px;">
+        <button onclick="window.print()" style="padding:10px 18px;background:#0284c7;color:#fff;border:none;border-radius:6px;font-weight:bold;cursor:pointer;">
+          🖨 In / Lưu Lịch Thi Đấu Ra File PDF
+        </button>
+      </div>
+      <h2>LỊCH THI ĐẤU VÒNG 2 CHUNG KẾT ĐỒNG ĐỘI — TECHCLASH 2026</h2>
+      <div class="sub">MindX Thái Nguyên • Tổng số: <b>${state.matches.length} trận</b> (Xen kẽ Bảng A &amp; Bảng B — Mỗi đội thi 1 lượt Sân Đỏ &amp; 1 lượt Sân Xanh)</div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:55px;">Trận</th>
+            <th style="width:60px;">Lượt</th>
+            <th style="width:125px;">Bảng Đấu</th>
+            <th>Sân Đỏ (Bên Trái)</th>
+            <th>Sân Xanh (Bên Phải)</th>
+            <th style="width:90px;">Tỷ Số / TT</th>
+          </tr>
+        </thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+      <script>setTimeout(function(){ window.print(); }, 300);</script>
       </body></html>
     `);
     win.document.close();
@@ -1900,6 +1978,9 @@
           </p>
         </div>
         <div class="schedule-actions" style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-emerald" onclick="window.TCApp.exportSchedulePDF()">
+            📄 Tải Lịch Thi Đấu (PDF)
+          </button>
           <button class="btn btn-outline" onclick="window.TCApp.resetMatchOrderToFirst()">
             ⏮ Đưa Về Trận #1
           </button>
@@ -2419,6 +2500,7 @@
     },
     exportExcelWorkbook,
     exportFullPDF,
+    exportSchedulePDF,
     exportParentTeamPDF,
     promptParentPDF() {
       const codeOrClass = prompt('Nhập Mã Đội (VD: A01, B07) hoặc Mã Lớp (VD: TN-ROB-ARMA17, TN-C4K-GI20) cần xuất PDF gửi Phụ huynh:', 'TN-ROB-ARMA17');

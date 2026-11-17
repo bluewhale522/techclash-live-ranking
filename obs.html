@@ -206,17 +206,18 @@
       100% { transform: scale(1.12); opacity: 0; }
     }
 
-    /* Dòng tiêu đề Esports nằm gọn 1 dòng ở khoảng trống phía trên Khung Lớn */
+    /* Tiêu đề Esports 2 dòng gọn gàng ở khoảng trống phía trên Khung Lớn */
     .stream-top-hud {
       position: absolute;
       left: 6.3%;
-      top: 5.2%;
+      top: 3.2%;
       width: 65.8%;
-      height: 8.5%;
+      height: 12.2%;
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1vw;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 0.38vw;
       pointer-events: none;
       white-space: nowrap;
     }
@@ -234,9 +235,9 @@
       color: #fff;
       font-family: 'Chakra Petch', sans-serif;
       font-weight: 900;
-      font-size: 0.82vw;
+      font-size: 0.84vw;
       letter-spacing: 0.1em;
-      padding: 0.36vw 0.8vw;
+      padding: 0.34vw 0.8vw;
       border-radius: 0.38vw;
       box-shadow: 0 0 18px rgba(239, 68, 68, 0.7);
       display: flex;
@@ -261,24 +262,22 @@
 
     .hud-main-title {
       font-family: 'Chakra Petch', sans-serif;
-      font-size: 1.5vw;
+      font-size: 1.85vw;
       font-weight: 900;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       color: #ffffff;
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      text-shadow: 0 2px 18px rgba(0, 0, 0, 0.95), 0 0 24px rgba(56, 189, 248, 0.45);
+      text-shadow: 0 2px 18px rgba(0, 0, 0, 0.95), 0 0 24px rgba(56, 189, 248, 0.55);
     }
 
     .hud-progress-pill {
-      background: rgba(7, 13, 25, 0.82);
+      background: rgba(7, 13, 25, 0.85);
       border: 1px solid rgba(103, 232, 249, 0.55);
-      padding: 0.4vw 0.95vw;
+      padding: 0.32vw 0.9vw;
       border-radius: 999px;
       font-family: 'Chakra Petch', sans-serif;
-      font-size: 0.82vw;
+      font-size: 0.84vw;
       font-weight: 800;
       color: #67e8f9;
       box-shadow: 0 0 18px rgba(56, 189, 248, 0.3);
@@ -721,17 +720,19 @@
     }
 
     .next-vs-cards {
+      flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 0.38vw;
+      justify-content: center;
+      gap: 0.65vw;
     }
 
     .next-card-side {
-      padding: 0.4vw 0.6vw;
-      border-radius: 0.42vw;
+      padding: 0.58vw 0.72vw;
+      border-radius: 0.45vw;
       display: flex;
       flex-direction: column;
-      gap: 0.1vw;
+      gap: 0.18vw;
       min-width: 0;
       overflow: hidden;
     }
@@ -798,12 +799,12 @@
 
     .ticker-badge {
       height: 100%;
-      padding: 0 1.1vw;
+      padding: 0 1.45vw;
       background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
       color: #ffffff;
       border-right: 2px solid #fca5a5;
       font-family: 'Chakra Petch', sans-serif;
-      font-size: 0.82vw;
+      font-size: 1.12vw;
       font-weight: 900;
       letter-spacing: 0.06em;
       display: flex;
@@ -828,7 +829,7 @@
       gap: 2.5vw;
       white-space: nowrap;
       padding-left: 1.5vw;
-      font-size: 0.8vw;
+      font-size: 1.08vw;
       font-weight: 700;
       color: #f8fafc;
       animation: marqueeScroll 36s linear infinite;
@@ -894,13 +895,13 @@
       </div>
     </div>
 
-    <!-- Tiêu đề HUD trên đỉnh (1 dòng gọn gàng, không xuống dòng) -->
+    <!-- Tiêu đề HUD trên đỉnh: Dòng 1 TECHCLASH 2026, Dòng 2 ĐỎ vs XANH & Tiến độ -->
     <div class="stream-top-hud">
       <div class="hud-title-block">
         <div class="hud-live-badge"><span class="hud-live-dot"></span> LIVE STREAM</div>
-        <div class="hud-main-title">TECH CLASH: FINALE 2026 — VÒNG 2 ĐỒNG ĐỘI</div>
+        <div class="hud-main-title">TECHCLASH 2026</div>
       </div>
-      <div class="hud-progress-pill" id="hud-progress">TIẾN ĐỘ: 18/31 TRẬN</div>
+      <div class="hud-progress-pill" id="hud-progress">TIẾN ĐỘ: 0/32 TRẬN</div>
     </div>
 
     <!-- 1. KHUNG LỚN BÊN TRÁI (BẢNG XẾP HẠNG LIVE TỪNG BẢNG / KẾT QUẢ TRẬN / CAMERA SA BÀN) -->
@@ -1262,14 +1263,13 @@
         `;
       }
 
-      // KHUNG DƯỚI BÊN PHẢI: NEXT ROUND (1 DÒNG MỖI THÀNH PHẦN, KHÔNG ICON THỪA)
+      // KHUNG DƯỚI BÊN PHẢI: NEXT ROUND (Đã bỏ dòng "Kế tiếp" ở dưới cùng theo yêu cầu)
       function renderBottomRightNextRound(curMatch) {
         const el = document.getElementById('box-bottom-right');
         if (!el) return;
 
         const upcoming = getNextMatches(curMatch);
         const nextM = upcoming[0];
-        const afterM = upcoming[1];
 
         if (!nextM) {
           el.innerHTML = `
@@ -1280,19 +1280,16 @@
             <div style="margin:auto;text-align:center;font-size:0.85vw;font-weight:700;color:#e2e8f0;white-space:nowrap;">
               Đã đến trận cuối cùng của giải đấu
             </div>
-            <div class="next-ondeck-bar">Chuẩn bị tổng kết trao giải Bảng A &amp; Bảng B</div>
           `;
           return;
         }
 
         const rT = getTeamById(nextM.redTeamId);
         const bT = getTeamById(nextM.blueTeamId);
-        const afterR = afterM ? getTeamById(afterM.redTeamId) : null;
-        const afterB = afterM ? getTeamById(afterM.blueTeamId) : null;
 
         el.innerHTML = `
           <div class="next-header-row">
-            <span class="next-title">NEXT ROUND • KẾ TIẾP</span>
+            <span class="next-title">NEXT ROUND</span>
             <span class="next-bracket-pill">TRẬN #${nextM.matchNumber} • BẢNG ${nextM.bracket}</span>
           </div>
 
@@ -1300,7 +1297,7 @@
             <div class="next-card-side red">
               <div class="next-card-class">
                 <span style="overflow:hidden;text-overflow:ellipsis;">SÂN ĐỎ: ${rT.className}</span>
-                <span style="font-size:0.64vw;color:#fca5a5;flex-shrink:0;">${rT.code} • Lượt ${nextM.redTurn}</span>
+                <span style="font-size:0.66vw;color:#fca5a5;flex-shrink:0;">${rT.code} • Lượt ${nextM.redTurn}</span>
               </div>
               <div class="next-card-stu">${rT.student1} - ${rT.student2}</div>
             </div>
@@ -1308,16 +1305,10 @@
             <div class="next-card-side blue">
               <div class="next-card-class">
                 <span style="overflow:hidden;text-overflow:ellipsis;">SÂN XANH: ${bT.className}</span>
-                <span style="font-size:0.64vw;color:#7dd3fc;flex-shrink:0;">${bT.code} • Lượt ${nextM.blueTurn}</span>
+                <span style="font-size:0.66vw;color:#7dd3fc;flex-shrink:0;">${bT.code} • Lượt ${nextM.blueTurn}</span>
               </div>
               <div class="next-card-stu">${bT.student1} - ${bT.student2}</div>
             </div>
-          </div>
-
-          <div class="next-ondeck-bar">
-            ${afterM
-              ? `Kế tiếp #${afterM.matchNumber} (Bảng ${afterM.bracket}): <b style="color:#fca5a5;">${afterR.className}</b> vs <b style="color:#7dd3fc;">${afterB.className}</b>`
-              : `Trận #${nextM.matchNumber} là trận khép lại Vòng 2`}
           </div>
         `;
       }
@@ -1554,16 +1545,24 @@
 
       function triggerVexTimerAudioOnChange(prevRunning, prevSec, newRunning, newSec, mode) {
         if (!window.VexIQSound) return;
-        if (state.config && state.config.transitionSound === false) return;
+        if (state.config && state.config.transitionSound === false) {
+          window.VexIQSound.stopBgMusic();
+          return;
+        }
         if (!prevRunning && newRunning && newSec > 0) {
           window.VexIQSound.playStart();
+          window.VexIQSound.startBgMusic();
           lastPlayedTimerSec = newSec;
           return;
+        }
+        if (prevRunning && !newRunning) {
+          window.VexIQSound.stopBgMusic();
         }
         if (newSec !== prevSec && (newRunning || newSec === 0)) {
           if (lastPlayedTimerSec !== newSec) {
             lastPlayedTimerSec = newSec;
             window.VexIQSound.onTimerSecond(newSec, mode);
+            if (newSec <= 0) window.VexIQSound.stopBgMusic();
           }
         }
       }
