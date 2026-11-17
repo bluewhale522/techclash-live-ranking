@@ -286,8 +286,11 @@
           <button class="btn-xs btn-outline" onclick="window.TCApp.redrawSchedule(false)" title="Xáo trộn & bốc thăm lại thứ tự các trận đấu xen kẽ A-B từ đầu">
             Reset &amp; Bốc Thăm Lại Thứ Tự Trận
           </button>
-          <button class="btn-xs btn-emerald" onclick="window.TCApp.switchTab('teams')" title="Mở bảng Cào Data Bảng A / Bảng B từ Google Sheet hoặc Dán Nhanh">
-            Cào Data Bảng Đấu (Google Sheet)
+          <button class="btn-xs btn-emerald" onclick="window.TCApp.scrapeCustomSheetUrl('', 'replace_both')" title="Cào trực tiếp danh sách Đội & Học sinh mới nhất từ Google Sheet của bạn và xếp lại lịch từ Trận #1">
+            🕷️ Cào Data Từ Google Sheet Ngay
+          </button>
+          <button class="btn-xs btn-outline" onclick="window.TCApp.switchTab('teams')" title="Mở tab tùy chỉnh Link Google Sheet hoặc thêm/xóa đội">
+            Tùy Chỉnh Link Sheet / Đội
           </button>
           <button class="btn-xs btn-outline" style="border-color:#ef4444;color:#fca5a5;" onclick="window.TCApp.wipeAllTeamsAndMatches()" title="Xóa trắng danh sách đội & trận để cào mới hoàn toàn">
             Xóa Trắng Data (Đội &amp; Trận)

@@ -1041,72 +1041,88 @@
   }
 
   async function scrapeFromAnyGoogleSheetUrl(customUrl, mode = 'replace_both') {
-    const targetUrl = String(customUrl || state.config.customSheetUrl || state.config.yearEndSheetId || '').trim();
+    const targetUrl = String(customUrl || state.config.customSheetUrl || state.config.yearEndSheetId || Engine.DEFAULT_CONFIG.yearEndSheetId || '').trim();
     if (!targetUrl) {
       showToast('Hãy dán đường link Google Sheet vào ô trước khi bấm cào dữ liệu!', 'warning');
       return;
     }
     state.config.customSheetUrl = targetUrl;
     try {
-      showToast('Đang truy cập link Google Sheet và tự động cào dữ liệu bảng đấu...', 'info');
-      const table = await Engine.fetchGoogleSheetJSONP(targetUrl);
-      const rows = table.rows || [];
-      const scrapedA = [];
-      const scrapedB = [];
+      showToast('Đang cào dữ liệu trực tiếp từ Google Sheet (Bảng A & Bảng B + Điểm Vòng 1)...', 'info');
+      let scrapedA = [];
+      let scrapedB = [];
       let updatedCount = 0;
 
-      const cellStr = (arr, idx) => (arr[idx] && (arr[idx].f !== undefined && arr[idx].f !== null ? arr[idx].f : arr[idx].v) ? String(arr[idx].f || arr[idx].v).trim() : '');
-
-      // Tự động nhận diện cả cấu trúc 2 cột (Junior bên trái / Teen bên phải như DS - HS vượt qua vòng 1)
-      // lẫn cấu trúc danh sách thẳng (Cột bất kỳ có Mã Lớp hoặc Tên Đội + Học sinh 1 & 2)
-      for (let r = 0; r < rows.length; r++) {
-        const c = rows[r].c || [];
-        const cNext = (rows[r + 1] && rows[r + 1].c) ? rows[r + 1].c : [];
-
-        // Trường hợp 1: Cấu trúc 2 bảng song song "DS - HS vượt qua vòng 1" (Cột A-G = Bảng A, Cột L-R = Bảng B)
-        const labelA = cellStr(c, 0);
-        const classA = cellStr(c, 1);
-        const lecA = cellStr(c, 5);
-        const hs1A = cellStr(c, 6);
-        const hs2A = cellStr(cNext, 6);
-        if ((labelA.toLowerCase().startsWith('đội') || /^A\d+/i.test(labelA)) && classA) {
-          scrapedA.push({
-            className: classA.toUpperCase(),
-            lec: lecA || '',
-            student1: (hs1A || 'Học sinh 1').replace(/^NNguyễn/, 'Nguyễn'),
-            student2: hs2A || 'Học sinh 2'
-          });
+      // Ưu tiên gọi API /api/scrape-sheet trên Server để cào trực tiếp cả Sheet 2 + Sheet 1 (Không bị chặn CORS hay thiếu học sinh)
+      try {
+        const srvRes = await fetch(API_BASE + '/api/scrape-sheet', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sheetUrl: targetUrl,
+            vong1Url: state.config.vong1SheetId || Engine.DEFAULT_CONFIG.vong1SheetId
+          })
+        });
+        const srvData = await srvRes.json();
+        if (srvData && srvData.ok && ((srvData.teamsA && srvData.teamsA.length > 0) || (srvData.teamsB && srvData.teamsB.length > 0))) {
+          scrapedA = srvData.teamsA || [];
+          scrapedB = srvData.teamsB || [];
         }
+      } catch (e) {}
 
-        const labelB = cellStr(c, 11);
-        const classB = cellStr(c, 12);
-        const lecB = cellStr(c, 16);
-        const hs1B = cellStr(c, 17);
-        const hs2B = cellStr(cNext, 17);
-        if ((labelB.toLowerCase().startsWith('đội') || /^B\d+/i.test(labelB)) && classB) {
-          scrapedB.push({
-            className: classB.toUpperCase(),
-            lec: lecB || '',
-            student1: hs1B || 'Học sinh 1',
-            student2: hs2B || 'Học sinh 2'
-          });
-        }
+      // Fallback sang JSONP trên trình duyệt nếu cần
+      if (scrapedA.length === 0 && scrapedB.length === 0) {
+        const table = await Engine.fetchGoogleSheetJSONP(targetUrl);
+        const rows = table.rows || [];
+        const cellStr = (arr, idx) => (arr[idx] && (arr[idx].f !== undefined && arr[idx].f !== null ? arr[idx].f : arr[idx].v) ? String(arr[idx].f || arr[idx].v).trim() : '');
 
-        // Trường hợp 2: Bảng phẳng bất kỳ có chứa Mã Lớp (VD: TN-ROB-..., TN-C4K-...) ở bất kỳ cột nào
-        if (scrapedA.length === 0 && scrapedB.length === 0) {
-          for (let col = 0; col < Math.min(c.length, 10); col++) {
-            const val = cellStr(c, col);
-            if (/^TN-(ROB|C4K)-/i.test(val)) {
-              const clsUpper = val.toUpperCase();
-              const isJunior = /-(PRE|ARM)/i.test(clsUpper) && !/SEMI/i.test(clsUpper);
-              const possibleS1 = cellStr(c, col + 1) || 'Học sinh 1';
-              const possibleS2 = cellStr(c, col + 2) || cellStr(cNext, col + 1) || 'Học sinh 2';
-              const item = { className: clsUpper, lec: '', student1: possibleS1, student2: possibleS2 };
-              if (mode === 'replace_A') scrapedA.push(item);
-              else if (mode === 'replace_B') scrapedB.push(item);
-              else if (isJunior) scrapedA.push(item);
-              else scrapedB.push(item);
-              break;
+        for (let r = 0; r < rows.length; r++) {
+          const c = rows[r].c || [];
+          const cNext = (rows[r + 1] && rows[r + 1].c) ? rows[r + 1].c : [];
+
+          const labelA = cellStr(c, 0);
+          const classA = cellStr(c, 1);
+          const lecA = cellStr(c, 5);
+          const hs1A = cellStr(c, 6);
+          const hs2A = cellStr(cNext, 6);
+          if ((labelA.toLowerCase().startsWith('đội') || /^A\d+/i.test(labelA)) && classA) {
+            scrapedA.push({
+              className: classA.toUpperCase(),
+              lec: lecA || '',
+              student1: (hs1A || 'Học sinh 1').replace(/^NNguyễn/, 'Nguyễn'),
+              student2: hs2A || 'Học sinh 2'
+            });
+          }
+
+          const labelB = cellStr(c, 11);
+          const classB = cellStr(c, 12);
+          const lecB = cellStr(c, 16);
+          const hs1B = cellStr(c, 17);
+          const hs2B = cellStr(cNext, 17);
+          if ((labelB.toLowerCase().startsWith('đội') || /^B\d+/i.test(labelB)) && classB) {
+            scrapedB.push({
+              className: classB.toUpperCase(),
+              lec: lecB || '',
+              student1: hs1B || 'Học sinh 1',
+              student2: hs2B || 'Học sinh 2'
+            });
+          }
+
+          if (scrapedA.length === 0 && scrapedB.length === 0) {
+            for (let col = 0; col < Math.min(c.length, 10); col++) {
+              const val = cellStr(c, col);
+              if (/^TN-(ROB|C4K)-/i.test(val)) {
+                const clsUpper = val.toUpperCase();
+                const isJunior = /-(PRE|ARM)/i.test(clsUpper) && !/SEMI/i.test(clsUpper);
+                const possibleS1 = cellStr(c, col + 1) || 'Học sinh 1';
+                const possibleS2 = cellStr(c, col + 2) || cellStr(cNext, col + 1) || 'Học sinh 2';
+                const item = { className: clsUpper, lec: '', student1: possibleS1, student2: possibleS2 };
+                if (mode === 'replace_A') scrapedA.push(item);
+                else if (mode === 'replace_B') scrapedB.push(item);
+                else if (isJunior) scrapedA.push(item);
+                else scrapedB.push(item);
+                break;
+              }
             }
           }
         }

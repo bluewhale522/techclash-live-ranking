@@ -236,6 +236,133 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // 3.5. API Cào trực tiếp dữ liệu Bảng A & Bảng B từ Google Sheet trên Server (/api/scrape-sheet) — Không bao giờ bị chặn CORS / JSONP
+  if (pathname === '/api/scrape-sheet' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', async () => {
+      try {
+        const payload = JSON.parse(body || '{}');
+        const rawUrl = String(payload.sheetUrl || 'https://docs.google.com/spreadsheets/d/16ylJXsvMpPIGgcY4ijdDSSiO514WjZXC4UheHG3aoak/edit?gid=107184150#gid=107184150').trim();
+        const rawV1 = String(payload.vong1Url || 'https://docs.google.com/spreadsheets/d/1YtRc0-REE6o759bKkpJfp-XeZZP9nrGwPor6RyTRal0/edit').trim();
+
+        const parseSheet = (u) => {
+          const idM = u.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+          const gidM = u.match(/[?#&]gid=([0-9]+)/);
+          return { id: idM ? idM[1] : u, gid: gidM ? gidM[1] : null };
+        };
+
+        const fetchGvizTable = async (id, param) => {
+          const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json` + (param ? `&${param}` : '');
+          const r = await fetch(url);
+          const txt = await r.text();
+          const start = txt.indexOf('{');
+          const end = txt.lastIndexOf('}');
+          if (start === -1 || end === -1) throw new Error('Sheet chưa bật quyền Xem công khai');
+          return JSON.parse(txt.slice(start, end + 1)).table;
+        };
+
+        const pMain = parseSheet(rawUrl);
+        const pV1 = parseSheet(rawV1);
+
+        const getTop2FromV1 = async (rawClassName) => {
+          if (!pV1.id) return ['', ''];
+          const cleanTab = String(rawClassName || '').trim().replace(/\s+[AB]$/i, '').replace(/-[AB]$/i, '');
+          const offset = /(-B|\sB)$/i.test(String(rawClassName || '').trim()) ? 2 : 0;
+          try {
+            const tbl = await fetchGvizTable(pV1.id, 'sheet=' + encodeURIComponent(cleanTab));
+            const rows = tbl.rows || [];
+            const map = {};
+            for (const row of rows) {
+              const c = row.c || [];
+              const name = c[1] && (c[1].f || c[1].v) ? String(c[1].f || c[1].v).trim() : '';
+              const sc = c[2] && c[2].v != null ? parseFloat(c[2].v) : NaN;
+              if (name && !/tên|học viên|ảnh/i.test(name)) {
+                if (!map[name]) map[name] = [];
+                if (!isNaN(sc)) map[name].push(sc);
+              }
+            }
+            const list = Object.keys(map).map(n => ({
+              name: n,
+              score: map[n].length ? Math.max(...map[n]) : 0
+            }));
+            list.sort((a, b) => b.score - a.score);
+            return [list[offset] ? list[offset].name : '', list[offset + 1] ? list[offset + 1].name : ''];
+          } catch (e) {
+            return ['', ''];
+          }
+        };
+
+        const tblMain = await fetchGvizTable(pMain.id, pMain.gid ? `gid=${pMain.gid}` : '');
+        const rows = tblMain.rows || [];
+        const cell = (arr, i) => (arr && arr[i] && (arr[i].f !== undefined && arr[i].f !== null ? arr[i].f : arr[i].v) ? String(arr[i].f || arr[i].v).trim() : '');
+
+        const teamsA = [];
+        const teamsB = [];
+
+        for (let r = 0; r < rows.length; r++) {
+          const c = rows[r].c || [];
+          const cn = (rows[r + 1] && rows[r + 1].c) ? rows[r + 1].c : [];
+
+          const lA = cell(c, 0), clsA = cell(c, 1), lecA = cell(c, 5), s1A = cell(c, 6), s2A = cell(cn, 6);
+          if ((lA.toLowerCase().startsWith('đội') || /^A\d+/i.test(lA)) && clsA) {
+            const [v1s1, v1s2] = (!s1A || !s2A) ? await getTop2FromV1(clsA) : ['', ''];
+            teamsA.push({
+              code: lA,
+              className: clsA.toUpperCase(),
+              lec: lecA || '',
+              student1: (s1A || v1s1 || 'Chờ cập nhật').replace(/^NNguyễn/, 'Nguyễn'),
+              student2: s2A || v1s2 || 'Chờ cập nhật'
+            });
+          }
+
+          const lB = cell(c, 11), clsB = cell(c, 12), lecB = cell(c, 16), s1B = cell(c, 17), s2B = cell(cn, 17);
+          if ((lB.toLowerCase().startsWith('đội') || /^B\d+/i.test(lB)) && clsB) {
+            const [v1s1, v1s2] = (!s1B || !s2B) ? await getTop2FromV1(clsB) : ['', ''];
+            teamsB.push({
+              code: lB,
+              className: clsB.toUpperCase(),
+              lec: lecB || '',
+              student1: s1B || v1s1 || 'Chờ cập nhật',
+              student2: s2B || v1s2 || 'Chờ cập nhật'
+            });
+          }
+
+          // Hỗ trợ cả bảng phẳng 1 danh sách
+          if (teamsA.length === 0 && teamsB.length === 0) {
+            for (let col = 0; col < Math.min(c.length, 10); col++) {
+              const val = cell(c, col);
+              if (/^TN-(ROB|C4K)-/i.test(val)) {
+                const clsUpper = val.toUpperCase();
+                const isJunior = /-(PRE|ARM)/i.test(clsUpper) && !/SEMI/i.test(clsUpper);
+                const p1 = cell(c, col + 1);
+                const p2 = cell(c, col + 2) || cell(cn, col + 1);
+                const [v1s1, v1s2] = (!p1 || !p2) ? await getTop2FromV1(clsUpper) : ['', ''];
+                const item = {
+                  code: '',
+                  className: clsUpper,
+                  lec: '',
+                  student1: p1 || v1s1 || 'Chờ cập nhật',
+                  student2: p2 || v1s2 || 'Chờ cập nhật'
+                };
+                if (isJunior) teamsA.push(item);
+                else teamsB.push(item);
+                break;
+              }
+            }
+          }
+        }
+
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ ok: true, teamsA, teamsB }));
+      } catch (err) {
+        res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ ok: false, error: err.message }));
+      }
+    });
+    return;
+  }
+
   // 4. Phục vụ file tĩnh (obs.html, admin.html, index.html, app.js, ui.js, obs-bg.jpg...)
   let safePath = pathname === '/' ? '/index.html' : pathname;
   const filePath = path.join(ROOT_DIR, decodeURIComponent(safePath));

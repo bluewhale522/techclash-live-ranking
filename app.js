@@ -25,7 +25,7 @@ const DEFAULT_CONFIG = {
  * Đã tự động nhặt Top 2 học sinh có Điểm Final Vòng 1 cao nhất từ các lớp đã thi!
  */
 const INITIAL_TEAMS = [
-  // ==================== BẢNG A: JUNIOR CODER (VEX GO - 12 ĐỘI) ====================
+  // ==================== BẢNG A: JUNIOR CODER (VEX GO - 13 ĐỘI TỪ GOOGLE SHEET) ====================
   {
     id: 'A01', code: 'Đội 1', bracket: 'A', className: 'TN-ROB-PREB18', lec: 'Thảo',
     student1: 'Đặng Đăng Khoa', student2: 'Nguyễn Hữu Minh',
@@ -33,32 +33,32 @@ const INITIAL_TEAMS = [
   },
   {
     id: 'A02', code: 'Đội 2', bracket: 'A', className: 'TN-ROB-PREA16', lec: 'Bảo',
-    student1: 'Nguyễn Minh Quân', student2: 'Trần Gia Bảo',
-    v1Score1: 24.0, v1Score2: 22.0, v1Avg: 23.0, active: true
+    student1: 'Nguyễn Lâm Dũng', student2: 'Nguyễn Ngọc Diệp',
+    v1Score1: 24.0, v1Score2: 21.0, v1Avg: 22.5, active: true
   },
   {
     id: 'A03', code: 'Đội 3', bracket: 'A', className: 'TN-ROB-PREA17', lec: 'Bảo',
-    student1: 'Phạm Hoàng Nam', student2: 'Vũ Đức Anh',
+    student1: 'Lê Ngạn Quân', student2: 'Đinh Mông Tiến Bắc',
     v1Score1: 19.5, v1Score2: 18.5, v1Avg: 19.0, active: true
   },
   {
-    id: 'A04', code: 'Đội 4', bracket: 'A', className: 'TN-ROB-PREI15', lec: 'Hồng Ly',
+    id: 'A04', code: 'Đội 4', bracket: 'A', className: 'TN-ROB-PREI15', lec: 'Thảo Ly',
     student1: 'Mai Nguyễn Minh Khôi', student2: 'Dương Tiến Đạt',
     v1Score1: 13.0, v1Score2: 11.5, v1Avg: 12.25, active: true
   },
   {
     id: 'A05', code: 'Đội 5', bracket: 'A', className: 'TN-ROB-ARMB22', lec: 'Trường',
-    student1: 'Hoàng Gia Khiêm', student2: 'Lê Minh Khang',
+    student1: 'Lường Hoài An', student2: 'Mai Quang Đăng',
     v1Score1: 25.0, v1Score2: 23.0, v1Avg: 24.0, active: true
   },
   {
     id: 'A06', code: 'Đội 6', bracket: 'A', className: 'TN-ROB-ARMB21', lec: 'Dũng',
-    student1: 'Bùi Nhật Minh', student2: 'Đỗ Hoàng Bách',
-    v1Score1: 20.5, v1Score2: 19.5, v1Avg: 20.0, active: true
+    student1: 'Bùi Đăng Khánh', student2: 'Trần Hoàng Nam',
+    v1Score1: 30.0, v1Score2: 29.0, v1Avg: 29.5, active: true
   },
   {
     id: 'A07', code: 'Đội 7', bracket: 'A', className: 'TN-ROB-ARMI06', lec: 'Mạnh',
-    student1: 'Trương Quốc Bảo', student2: 'Phan Tuấn Kiệt',
+    student1: 'Lê Anh Duy', student2: 'Nguyễn Đức Bảo',
     v1Score1: 22.0, v1Score2: 19.0, v1Avg: 20.5, active: true
   },
   {
@@ -86,27 +86,32 @@ const INITIAL_TEAMS = [
     student1: 'Vũ Bá Hiếu', student2: 'Nguyễn Tuệ Minh',
     v1Score1: 27.5, v1Score2: 26.5, v1Avg: 27.0, active: true
   },
+  {
+    id: 'A13', code: 'Đội 13', bracket: 'A', className: 'TN-ROB-PREI16', lec: 'Mạnh',
+    student1: 'Nguyễn Gia Khiêm', student2: 'Đặng Gia Huy',
+    v1Score1: 23.0, v1Score2: 21.0, v1Avg: 22.0, active: true
+  },
 
-  // ==================== BẢNG B: TEEN CODER (VEX IQ - 19 ĐỘI) ====================
+  // ==================== BẢNG B: TEEN CODER (VEX IQ - 19 ĐỘI TỪ GOOGLE SHEET) ====================
   {
     id: 'B01', code: 'Đội 1', bracket: 'B', className: 'TN-ROB-SEMIB08', lec: 'Mạnh',
-    student1: 'Nguyễn Hải Đăng', student2: 'Phạm Gia Hưng',
+    student1: 'Nguyễn Ngọc Đăng Khôi', student2: 'Hoàng Anh Khang',
     v1Score1: 28.0, v1Score2: 25.0, v1Avg: 26.5, active: true
   },
   {
     id: 'B02', code: 'Đội 2', bracket: 'B', className: 'TN-ROB-SEMIA09', lec: 'Mạnh',
-    student1: 'Trần Quốc Khánh', student2: 'Lê Hoàng Việt',
+    student1: 'Mai Đức Việt', student2: 'Trương Minh Khang',
     v1Score1: 24.0, v1Score2: 22.0, v1Avg: 23.0, active: true
   },
   {
     id: 'B03', code: 'Đội 3', bracket: 'B', className: 'TN-ROB-SEMII05', lec: 'Hồng Ly',
-    student1: 'Vũ Minh Triết', student2: 'Hoàng Tuấn Anh',
-    v1Score1: 27.0, v1Score2: 24.5, v1Avg: 25.75, active: true
+    student1: 'Lâm Nhất Huy', student2: 'Nguyễn Hoàng Tiệp',
+    v1Score1: 33.0, v1Score2: 33.0, v1Avg: 33.0, active: true
   },
   {
     id: 'B04', code: 'Đội 4', bracket: 'B', className: 'TN-ROB-SEMIB10', lec: 'Hồng Ly',
-    student1: 'Đặng Quang Minh', student2: 'Bùi Đức Duy',
-    v1Score1: 21.5, v1Score2: 19.5, v1Avg: 20.5, active: true
+    student1: 'Nguyễn Phú Hiếu', student2: 'Đoàn Quang Phúc',
+    v1Score1: 27.0, v1Score2: 24.0, v1Avg: 25.5, active: true
   },
   {
     id: 'B05', code: 'Đội 5', bracket: 'B', className: 'TN-ROB-SEMIA06', lec: 'Mạnh',
@@ -124,8 +129,8 @@ const INITIAL_TEAMS = [
     v1Score1: 22.5, v1Score2: 17.0, v1Avg: 19.75, active: true
   },
   {
-    id: 'B08', code: 'Đội 8', bracket: 'B', className: 'TN-C4K-GB26', lec: 'Mạnh',
-    student1: 'Trịnh Hoàng Quân', student2: 'Cao Minh Nhật',
+    id: 'B08', code: 'Đội 8', bracket: 'B', className: 'TN-C4K-GB26 A', lec: 'Mạnh',
+    student1: 'Nguyễn Minh Nhật', student2: 'Đặng Bảo Long',
     v1Score1: 25.0, v1Score2: 22.5, v1Avg: 23.75, active: true
   },
   {
@@ -160,7 +165,7 @@ const INITIAL_TEAMS = [
   },
   {
     id: 'B15', code: 'Đội 15', bracket: 'B', className: 'TN-C4K-PTA08', lec: 'Ngọc',
-    student1: 'Đoàn Minh Khôi', student2: 'Hà Gia Phúc',
+    student1: 'Ma Hoàng Anh', student2: 'Đàm Gia An',
     v1Score1: 24.0, v1Score2: 21.0, v1Avg: 22.5, active: true
   },
   {
@@ -175,12 +180,12 @@ const INITIAL_TEAMS = [
   },
   {
     id: 'B18', code: 'Đội 18', bracket: 'B', className: 'TN-C4K-GB26-B', lec: 'Mạnh',
-    student1: 'Vương Gia Bảo', student2: 'Kiều Minh Đức',
+    student1: 'Lăng Quang Khải', student2: 'Trần Tùng Anh',
     v1Score1: 19.5, v1Score2: 18.0, v1Avg: 18.75, active: true
   },
   {
     id: 'B19', code: 'Đội 19', bracket: 'B', className: 'TN-C4K-GB25-B', lec: 'Mạnh',
-    student1: 'Đoàn Khắc Huy', student2: 'Trần Thanh Phong',
+    student1: 'Nguyễn Tiến Đạt', student2: 'Hoàng Bảo Minh',
     v1Score1: 20.0, v1Score2: 17.0, v1Avg: 18.5, active: true
   }
 ];
