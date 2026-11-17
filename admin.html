@@ -226,7 +226,7 @@
           </button>
           <button class="btn-xs btn-amber" onclick="window.TCApp.setOBSView('ranking_A')">Hiện BXH Bảng A (Junior)</button>
           <button class="btn-xs btn-amber" onclick="window.TCApp.setOBSView('ranking_B')">Hiện BXH Bảng B (Teen)</button>
-          <button class="btn-xs btn-outline" onclick="window.TCApp.toggleOBSBracketTransition()">Transitions: Đổi Bảng A ⇄ B (3s)</button>
+          <button class="btn-xs btn-outline" onclick="window.TCApp.toggleOBSBracketTransition()">Transitions: Đổi Bảng A ⇄ B (1.5s)</button>
           <button class="btn-xs btn-outline" onclick="window.TCApp.setOBSView('result')">Hiện Kết Quả Trận</button>
           <button class="btn-xs btn-outline" onclick="window.TCApp.toggleOBSBgMode()">
             Bật/Tắt Nền Trong Suốt Toàn Màn
@@ -245,22 +245,22 @@
       <!-- HÀNG 2: NÚT TRANSITIONS (3 GIÂY) & BẮN HIỆU ỨNG CHUYỂN CẢNH LÊN OBS -->
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding-top:8px;border-top:1px solid rgba(148,163,184,0.2);">
         <div class="obs-remote-group" style="flex:1;min-width:300px;">
-          <span style="font-size:12px;font-weight:800;color:#fbbf24;">TRANSITIONS (3 GIÂY + SOUND EFFECT):</span>
+          <span style="font-size:12px;font-weight:800;color:#fbbf24;">TRANSITIONS (1.5 GIÂY + SOUND EFFECT):</span>
           <input type="text" id="admin-transition-title" class="input-text" style="max-width:240px;padding:5px 10px;font-size:12px;"
-            placeholder="Nhập chữ Transitions chính..." value="TECH CLASH: FINALE 2026" />
+            placeholder="Nhập chữ Transitions chính..." value="TECHCLASH 2026" />
           <input type="text" id="admin-transition-sub" class="input-text" style="max-width:260px;padding:5px 10px;font-size:12px;"
             placeholder="Nhập dòng phụ Transitions..." value="MINDX THÁI NGUYÊN • VÒNG 2 ĐỒNG ĐỘI" />
           <button class="btn-xs btn-emerald" onclick="window.TCApp.triggerOBSTransition(document.getElementById('admin-transition-title').value, document.getElementById('admin-transition-sub').value)">
-            Bắn Transitions (3s + SFX) Lên OBS
+            Bắn Transitions (1.5s + SFX) Lên OBS
           </button>
           <button class="btn-xs btn-outline" onclick="window.TCApp.triggerOBSTransition('NEXT ROUND • ĐỔI ĐỘI THI ĐẤU', 'MỜI 2 ĐỘI TIẾP THEO VÀO SA BÀN')">
-            Transitions: Next Round (3s)
+            Transitions: Next Round (1.5s)
           </button>
           <button class="btn-xs btn-outline" onclick="window.TCApp.setOBSView('ranking_A')">
-            Transitions: Sang BXH Bảng A (3s)
+            Transitions: Sang BXH Bảng A (1.5s)
           </button>
           <button class="btn-xs btn-outline" onclick="window.TCApp.setOBSView('ranking_B')">
-            Transitions: Sang BXH Bảng B (3s)
+            Transitions: Sang BXH Bảng B (1.5s)
           </button>
           <button class="btn-xs btn-amber" onclick="window.TCApp.playTransitionSFX()">
             Nghe Thử SFX Transitions

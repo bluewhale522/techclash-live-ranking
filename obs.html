@@ -115,7 +115,7 @@
 
     .stinger-overlay.active {
       visibility: visible;
-      animation: stingerMaster 3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: stingerMaster 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
 
     .stinger-wing-fire {
@@ -133,11 +133,11 @@
     }
 
     .stinger-overlay.active .stinger-wing-fire {
-      animation: wingFireIn 3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: wingFireIn 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
 
     .stinger-overlay.active .stinger-wing-ice {
-      animation: wingIceIn 3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: wingIceIn 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
 
     .stinger-center-card {
@@ -154,7 +154,7 @@
     }
 
     .stinger-overlay.active .stinger-center-card {
-      animation: stingerCardPop 3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: stingerCardPop 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
 
     .stinger-title {
@@ -998,7 +998,7 @@
       let lastTransitionId = (state.config && state.config.transitionTrigger && state.config.transitionTrigger.id) || 0;
       let lastObsView = (state.config && state.config.obsMainView) || 'ranking_A';
 
-      // ==================== BỘ TẠO SOUND EFFECT TRANSITIONS 3 GIÂY (ESPORTS STINGER WHOOSH + IMPACT BOOM) ====================
+      // ==================== BỘ TẠO SOUND EFFECT TRANSITIONS 1.5 GIÂY (ESPORTS STINGER WHOOSH + IMPACT BOOM) ====================
       let stingerAudioUrl = null;
       let stingerAudioCtx = null;
 
@@ -1006,7 +1006,7 @@
         if (stingerAudioUrl) return stingerAudioUrl;
         try {
           const sampleRate = 44100;
-          const duration = 3.0;
+          const duration = 1.5;
           const numSamples = Math.floor(sampleRate * duration);
           const buffer = new ArrayBuffer(44 + numSamples * 2);
           const view = new DataView(buffer);
@@ -1036,47 +1036,46 @@
             let sample = 0;
             const white = Math.random() * 2 - 1;
 
-            // 1. 0.00s -> 0.45s: Tiếng gió Whoosh lao vào + Riser tăng tốc khi 2 cánh Lửa & Băng khép lại
-            if (t < 0.45) {
-              const env = Math.sin((t / 0.45) * Math.PI);
-              const alpha = 0.08 + 0.35 * (t / 0.45);
+            // 1. 0.00s -> 0.28s: Whoosh lao vào
+            if (t < 0.28) {
+              const env = Math.sin((t / 0.28) * Math.PI);
+              const alpha = 0.08 + 0.38 * (t / 0.28);
               noiseState = noiseState + alpha * (white - noiseState);
-              const riserFreq = 110 * Math.pow(4.0, t / 0.45);
+              const riserFreq = 120 * Math.pow(4.0, t / 0.28);
               phaseRiser += (2 * Math.PI * riserFreq) / sampleRate;
-              sample += noiseState * env * 0.55 + Math.sin(phaseRiser) * env * 0.3;
+              sample += noiseState * env * 0.65 + Math.sin(phaseRiser) * env * 0.35;
             }
 
-            // 2. 0.36s -> 1.85s: Tiếng nổ Sub-Bass Impact Boom + Hợp âm Cyber (C3 - G3 - C4 - E4) khi thẻ chữ bung ra
-            if (t >= 0.36 && t < 1.95) {
-              const dt = t - 0.36;
-              const boomEnv = Math.exp(-dt * 4.5);
-              const subFreq = 42 + 115 * Math.exp(-dt * 14);
+            // 2. 0.24s -> 1.05s: Sub-Bass Impact Boom + Cyber Chord
+            if (t >= 0.24 && t < 1.05) {
+              const dt = t - 0.24;
+              const boomEnv = Math.exp(-dt * 6.5);
+              const subFreq = 42 + 120 * Math.exp(-dt * 16);
               phaseSub += (2 * Math.PI * subFreq) / sampleRate;
-              const subWave = Math.sin(phaseSub) * boomEnv * 0.75;
+              const subWave = Math.sin(phaseSub) * boomEnv * 0.85;
 
-              const chordEnv = Math.min(1, dt / 0.03) * Math.exp(-dt * 2.1);
-              phaseC1 += (2 * Math.PI * 261.63) / sampleRate; // C4
-              phaseC2 += (2 * Math.PI * 392.00) / sampleRate; // G4
-              phaseC3 += (2 * Math.PI * 523.25) / sampleRate; // C5
-              const chordWave = (Math.sin(phaseC1) * 0.35 + Math.sin(phaseC2) * 0.3 + Math.sin(phaseC3) * 0.25) * chordEnv * 0.45;
+              const chordEnv = Math.min(1, dt / 0.02) * Math.exp(-dt * 3.5);
+              phaseC1 += (2 * Math.PI * 261.63) / sampleRate;
+              phaseC2 += (2 * Math.PI * 392.00) / sampleRate;
+              phaseC3 += (2 * Math.PI * 523.25) / sampleRate;
+              const chordWave = (Math.sin(phaseC1) * 0.35 + Math.sin(phaseC2) * 0.3 + Math.sin(phaseC3) * 0.25) * chordEnv * 0.5;
 
-              // Tiếng va chạm kim loại lúc 0.36s
-              const hitEnv = Math.exp(-dt * 22);
-              sample += subWave + chordWave + white * hitEnv * 0.35;
+              const hitEnv = Math.exp(-dt * 26);
+              sample += subWave + chordWave + white * hitEnv * 0.4;
             }
 
-            // 3. 2.15s -> 2.95s: Tiếng gió Swoosh mở cánh ra cảnh mới ở giây thứ 3
-            if (t >= 2.15 && t < 2.95) {
-              const dt2 = (t - 2.15) / 0.8;
+            // 3. 1.05s -> 1.48s: Swoosh mở cánh ra cảnh mới
+            if (t >= 1.05 && t < 1.48) {
+              const dt2 = (t - 1.05) / 0.43;
               const env2 = Math.sin(dt2 * Math.PI);
-              const alpha2 = 0.4 - 0.32 * dt2;
+              const alpha2 = 0.42 - 0.34 * dt2;
               noiseState = noiseState + alpha2 * (white - noiseState);
-              const dropFreq = 360 * Math.pow(0.35, dt2);
+              const dropFreq = 380 * Math.pow(0.35, dt2);
               phaseRiser += (2 * Math.PI * dropFreq) / sampleRate;
-              sample += noiseState * env2 * 0.5 + Math.sin(phaseRiser) * env2 * 0.22;
+              sample += noiseState * env2 * 0.58 + Math.sin(phaseRiser) * env2 * 0.25;
             }
 
-            const clamped = Math.max(-1, Math.min(1, sample * 0.9));
+            const clamped = Math.max(-1, Math.min(1, sample * 0.95));
             view.setInt16(44 + i * 2, clamped < 0 ? clamped * 0x8000 : clamped * 0x7FFF, true);
           }
 
