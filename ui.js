@@ -1040,41 +1040,42 @@
     win.document.close();
   }
 
-  async function scrapeFromAnyGoogleSheetUrl(customUrl) {
+  async function scrapeFromAnyGoogleSheetUrl(customUrl, mode = 'replace_both') {
     const targetUrl = String(customUrl || state.config.customSheetUrl || state.config.yearEndSheetId || '').trim();
     if (!targetUrl) {
-      showToast('⚠️ Hãy dán đường link Google Sheet vào ô trước khi bấm cào dữ liệu!', 'warning');
+      showToast('Hãy dán đường link Google Sheet vào ô trước khi bấm cào dữ liệu!', 'warning');
       return;
     }
     state.config.customSheetUrl = targetUrl;
     try {
-      showToast('🕷️ Đang truy cập link Google Sheet và tự động cào danh sách đội & học sinh...', 'info');
+      showToast('Đang truy cập link Google Sheet và tự động cào dữ liệu bảng đấu...', 'info');
       const table = await Engine.fetchGoogleSheetJSONP(targetUrl);
       const rows = table.rows || [];
+      const scrapedA = [];
+      const scrapedB = [];
       let updatedCount = 0;
 
+      const cellStr = (arr, idx) => (arr[idx] && (arr[idx].f !== undefined && arr[idx].f !== null ? arr[idx].f : arr[idx].v) ? String(arr[idx].f || arr[idx].v).trim() : '');
+
       // Tự động nhận diện cả cấu trúc 2 cột (Junior bên trái / Teen bên phải như DS - HS vượt qua vòng 1)
-      // lẫn cấu trúc danh sách thẳng (Cột A = Mã đội/Bảng, Cột B = Lớp, Cột C/D = Học sinh 1 & 2)
+      // lẫn cấu trúc danh sách thẳng (Cột bất kỳ có Mã Lớp hoặc Tên Đội + Học sinh 1 & 2)
       for (let r = 0; r < rows.length; r++) {
         const c = rows[r].c || [];
         const cNext = (rows[r + 1] && rows[r + 1].c) ? rows[r + 1].c : [];
 
-        const cellStr = (arr, idx) => (arr[idx] && (arr[idx].f || arr[idx].v) ? String(arr[idx].f || arr[idx].v).trim() : '');
-
-        // Trường hợp 1: Cấu trúc "DS - HS vượt qua vòng 1"
+        // Trường hợp 1: Cấu trúc 2 bảng song song "DS - HS vượt qua vòng 1" (Cột A-G = Bảng A, Cột L-R = Bảng B)
         const labelA = cellStr(c, 0);
         const classA = cellStr(c, 1);
         const lecA = cellStr(c, 5);
         const hs1A = cellStr(c, 6);
         const hs2A = cellStr(cNext, 6);
-        if (labelA.startsWith('Đội') && classA) {
-          const teamA = state.teams.find(t => t.className.toUpperCase() === classA.toUpperCase());
-          if (teamA) {
-            if (lecA) teamA.lec = lecA;
-            if (hs1A) teamA.student1 = hs1A.replace(/^NNguyễn/, 'Nguyễn');
-            if (hs2A) teamA.student2 = hs2A;
-            updatedCount++;
-          }
+        if ((labelA.toLowerCase().startsWith('đội') || /^A\d+/i.test(labelA)) && classA) {
+          scrapedA.push({
+            className: classA.toUpperCase(),
+            lec: lecA || '',
+            student1: (hs1A || 'Học sinh 1').replace(/^NNguyễn/, 'Nguyễn'),
+            student2: hs2A || 'Học sinh 2'
+          });
         }
 
         const labelB = cellStr(c, 11);
@@ -1082,37 +1083,188 @@
         const lecB = cellStr(c, 16);
         const hs1B = cellStr(c, 17);
         const hs2B = cellStr(cNext, 17);
-        if (labelB.startsWith('Đội') && classB) {
-          const teamB = state.teams.find(t => t.className.toUpperCase() === classB.toUpperCase());
-          if (teamB) {
-            if (lecB) teamB.lec = lecB;
-            if (hs1B) teamB.student1 = hs1B;
-            if (hs2B) teamB.student2 = hs2B;
-            updatedCount++;
-          }
+        if ((labelB.toLowerCase().startsWith('đội') || /^B\d+/i.test(labelB)) && classB) {
+          scrapedB.push({
+            className: classB.toUpperCase(),
+            lec: lecB || '',
+            student1: hs1B || 'Học sinh 1',
+            student2: hs2B || 'Học sinh 2'
+          });
         }
 
         // Trường hợp 2: Bảng phẳng bất kỳ có chứa Mã Lớp (VD: TN-ROB-..., TN-C4K-...) ở bất kỳ cột nào
-        for (let col = 0; col < Math.min(c.length, 8); col++) {
-          const val = cellStr(c, col);
-          if (/^TN-(ROB|C4K)-/i.test(val)) {
-            const matchedTeam = state.teams.find(t => t.className.toUpperCase() === val.toUpperCase());
-            if (matchedTeam) {
-              const possibleS1 = cellStr(c, col + 1);
-              const possibleS2 = cellStr(c, col + 2);
-              if (possibleS1 && isNaN(Number(possibleS1))) matchedTeam.student1 = possibleS1;
-              if (possibleS2 && isNaN(Number(possibleS2))) matchedTeam.student2 = possibleS2;
-              updatedCount++;
+        if (scrapedA.length === 0 && scrapedB.length === 0) {
+          for (let col = 0; col < Math.min(c.length, 10); col++) {
+            const val = cellStr(c, col);
+            if (/^TN-(ROB|C4K)-/i.test(val)) {
+              const clsUpper = val.toUpperCase();
+              const isJunior = /-(PRE|ARM)/i.test(clsUpper) && !/SEMI/i.test(clsUpper);
+              const possibleS1 = cellStr(c, col + 1) || 'Học sinh 1';
+              const possibleS2 = cellStr(c, col + 2) || cellStr(cNext, col + 1) || 'Học sinh 2';
+              const item = { className: clsUpper, lec: '', student1: possibleS1, student2: possibleS2 };
+              if (mode === 'replace_A') scrapedA.push(item);
+              else if (mode === 'replace_B') scrapedB.push(item);
+              else if (isJunior) scrapedA.push(item);
+              else scrapedB.push(item);
+              break;
             }
           }
         }
       }
 
+      if (mode === 'update_existing') {
+        [...scrapedA, ...scrapedB].forEach(sc => {
+          const found = state.teams.find(t => t.className.toUpperCase() === sc.className.toUpperCase());
+          if (found) {
+            if (sc.lec) found.lec = sc.lec;
+            if (sc.student1) found.student1 = sc.student1;
+            if (sc.student2) found.student2 = sc.student2;
+            updatedCount++;
+          }
+        });
+        saveState(true, true);
+        showToast('Đã cập nhật tên học sinh cho ' + updatedCount + ' đội từ Google Sheet!', 'success');
+        return;
+      }
+
+      // Chế độ tạo mới / thay thế bảng đấu từ dữ liệu cào được
+      let newTeamsA = state.teams.filter(t => t.bracket === 'A');
+      let newTeamsB = state.teams.filter(t => t.bracket === 'B');
+
+      if ((mode === 'replace_both' || mode === 'replace_A') && scrapedA.length > 0) {
+        newTeamsA = scrapedA.map((item, idx) => {
+          const code = 'A' + String(idx + 1).padStart(2, '0');
+          return {
+            id: code,
+            code,
+            bracket: 'A',
+            seed: idx + 1,
+            className: item.className,
+            lec: item.lec || '',
+            student1: item.student1 || 'Học sinh 1',
+            student2: item.student2 || 'Học sinh 2',
+            v1Avg: 20,
+            active: true
+          };
+        });
+        updatedCount += newTeamsA.length;
+      }
+
+      if ((mode === 'replace_both' || mode === 'replace_B') && scrapedB.length > 0) {
+        newTeamsB = scrapedB.map((item, idx) => {
+          const code = 'B' + String(idx + 1).padStart(2, '0');
+          return {
+            id: code,
+            code,
+            bracket: 'B',
+            seed: idx + 1,
+            className: item.className,
+            lec: item.lec || '',
+            student1: item.student1 || 'Học sinh 1',
+            student2: item.student2 || 'Học sinh 2',
+            v1Avg: 25,
+            active: true
+          };
+        });
+        updatedCount += newTeamsB.length;
+      }
+
+      if (updatedCount === 0) {
+        showToast('Không tìm thấy dòng đội thi hợp lệ trong tab Sheet này! Bạn có thể dùng ô Copy-Paste trực tiếp bên dưới.', 'warning');
+        return;
+      }
+
+      state.teams = [...newTeamsA, ...newTeamsB];
+      state.matches = Engine.generateInterleavedSchedule(state.teams, false);
+      if (state.matches.length > 0) {
+        state.matches[0].status = 'live';
+        selectedMatchId = state.matches[0].id;
+      }
+      state.config.customProgressText = '';
+      state.config.obsMainView = state.config.cutoutType || 'chroma_green';
+      setTimerMode('match');
       saveState(true, true);
-      showToast('✅ Đã cào thành công dữ liệu của ' + updatedCount + ' đội từ Link Google Sheet!', 'success');
+      showToast('Đã cào thành công ' + updatedCount + ' đội (Bảng A: ' + newTeamsA.length + ', Bảng B: ' + newTeamsB.length + ') & xếp lịch mới từ Trận #1 (Tiến độ 0/' + state.matches.length + ')!', 'success');
     } catch (err) {
-      showToast('⚠️ Không đọc được link Sheet (Hãy kiểm tra quyền Chia sẻ -> Bất kỳ ai có liên kết đều xem được): ' + err.message, 'error');
+      showToast('Không đọc được link Sheet (Kiểm tra quyền Chia sẻ -> Bất kỳ ai có liên kết, hoặc dùng ô Copy-Paste bên dưới): ' + err.message, 'error');
     }
+  }
+
+  function parsePastedBracketData(rawText, bracketCode) {
+    const text = String(rawText || '').trim();
+    if (!text) {
+      showToast('Hãy dán danh sách đội (Copy từ Excel / Google Sheet) vào ô trước!', 'warning');
+      return;
+    }
+    const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    const parsed = [];
+
+    for (let i = 0; i < lines.length; i++) {
+      const cols = lines[i].split(/\t|,|;|\|/).map(s => s.trim()).filter(Boolean);
+      if (cols.length === 0) continue;
+
+      // Tìm cột chứa tên lớp (VD: TN-ROB-..., TN-C4K-...) hoặc lấy cột đầu tiên
+      let clsIdx = cols.findIndex(c => /^TN-(ROB|C4K)-/i.test(c));
+      if (clsIdx !== -1) {
+        const className = cols[clsIdx].toUpperCase();
+        const afterCols = cols.slice(clsIdx + 1).filter(x => isNaN(Number(x)) && !/^đội\s*\d+/i.test(x));
+        let student1 = afterCols[0] || 'Học sinh 1';
+        let student2 = afterCols[1] || '';
+
+        // Nếu dòng tiếp theo chỉ có 1 cột tên học sinh 2 (như cấu trúc gộp ô 2 dòng của Google Sheet)
+        if (!student2 && i + 1 < lines.length) {
+          const nextCols = lines[i + 1].split(/\t|,|;|\|/).map(s => s.trim()).filter(Boolean);
+          const hasNextClass = nextCols.some(c => /^TN-(ROB|C4K)-/i.test(c));
+          if (!hasNextClass && nextCols.length > 0) {
+            student2 = nextCols[nextCols.length - 1];
+            i++;
+          }
+        }
+        parsed.push({ className, student1, student2: student2 || 'Học sinh 2' });
+      } else if (cols.length >= 2 && !/^bảng|hạng|mã|stt/i.test(cols[0])) {
+        parsed.push({
+          className: cols[0].toUpperCase(),
+          student1: cols[1] || 'Học sinh 1',
+          student2: cols[2] || 'Học sinh 2'
+        });
+      }
+    }
+
+    if (parsed.length === 0) {
+      showToast('Không tách được đội nào từ văn bản đã dán!', 'warning');
+      return;
+    }
+
+    const otherTeams = state.teams.filter(t => t.bracket !== bracketCode);
+    const newBracketTeams = parsed.map((item, idx) => {
+      const code = bracketCode + String(idx + 1).padStart(2, '0');
+      return {
+        id: code,
+        code,
+        bracket: bracketCode,
+        seed: idx + 1,
+        className: item.className,
+        lec: '',
+        student1: item.student1,
+        student2: item.student2,
+        v1Avg: 20,
+        active: true
+      };
+    });
+
+    state.teams = bracketCode === 'A'
+      ? [...newBracketTeams, ...otherTeams]
+      : [...otherTeams, ...newBracketTeams];
+
+    state.matches = Engine.generateInterleavedSchedule(state.teams, false);
+    if (state.matches.length > 0) {
+      state.matches[0].status = 'live';
+      selectedMatchId = state.matches[0].id;
+    }
+    state.config.customProgressText = '';
+    setTimerMode('match');
+    saveState(true, true);
+    showToast('Đã nạp ' + newBracketTeams.length + ' đội vào Bảng ' + bracketCode + ' & xếp lại lịch thi đấu từ Trận #1!', 'success');
   }
 
   function showToast(msg, type = 'info') {
@@ -1728,12 +1880,18 @@
             <b>Không xếp trận của 1 đội gần nhau</b> (Khoảng nghỉ tối thiểu giữa 2 lượt: <b>${metrics.minGap} trận</b>)
           </p>
         </div>
-        <div class="schedule-actions">
+        <div class="schedule-actions" style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-outline" onclick="window.TCApp.resetMatchOrderToFirst()">
+            ⏮ Đưa Về Trận #1
+          </button>
+          <button class="btn btn-outline" onclick="window.TCApp.clearAllScoresToZero()">
+            🧹 Xóa Điểm Về 0đ (Tiến độ 0/${state.matches.length})
+          </button>
           <button class="btn btn-amber" onclick="window.TCApp.redrawSchedule()">
-            🎲 Bốc thăm ngẫu nhiên lại lịch đấu
+            🎲 Bốc Thăm Lại Thứ Tự Trận
           </button>
           <button class="btn btn-outline" onclick="window.TCApp.exportCSV()">
-            📥 Xuất Lịch & Bảng Điểm (.CSV)
+            📥 Xuất Lịch &amp; Bảng Điểm (.CSV)
           </button>
         </div>
       </div>
@@ -1745,13 +1903,13 @@
             Tất cả (${state.matches.length} trận)
           </button>
           <button class="btn-filter ${scheduleFilter === 'A' ? 'active' : ''}" onclick="window.TCApp.setScheduleFilter('A')">
-            ⚡ Bảng A - Junior Coder (12 trận)
+            ⚡ Bảng A - Junior Coder (${state.matches.filter(x=>x.bracket==='A').length} trận)
           </button>
           <button class="btn-filter ${scheduleFilter === 'B' ? 'active' : ''}" onclick="window.TCApp.setScheduleFilter('B')">
-            🔥 Bảng B - Teen Coder (19 trận)
+            🔥 Bảng B - Teen Coder (${state.matches.filter(x=>x.bracket==='B').length} trận)
           </button>
           <button class="btn-filter ${scheduleFilter === 'pending' ? 'active' : ''}" onclick="window.TCApp.setScheduleFilter('pending')">
-            ⏳ Chưa thi đấu
+            ⏳ Chưa thi đấu (${state.matches.filter(x=>x.status==='pending').length})
           </button>
         </div>
         <div class="toolbar-right">
@@ -1764,7 +1922,7 @@
         <table class="tpc-table schedule-table">
           <thead>
             <tr>
-              <th>TRẬN</th>
+              <th>TRẬN / ĐỔI THỨ TỰ</th>
               <th>VÒNG LƯỢT</th>
               <th>BẢNG ĐẤU (XEN KẼ A/B)</th>
               <th>🔴 ĐỘI SÂN ĐỎ (BÊN TRÁI) & 2 HỌC SINH</th>
@@ -1782,7 +1940,13 @@
 
               return `
                 <tr class="tpc-row ${m.status === 'live' ? 'row-is-live' : ''}">
-                  <td><b class="match-num-badge">#${m.matchNumber}</b></td>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:4px;">
+                      <b class="match-num-badge">#${m.matchNumber}</b>
+                      <button class="btn-xs btn-outline" style="padding:2px 5px;" title="Đẩy trận này lên trước" onclick="window.TCApp.moveMatchOrder('${m.id}', -1)">⬆️</button>
+                      <button class="btn-xs btn-outline" style="padding:2px 5px;" title="Đẩy trận này xuống sau" onclick="window.TCApp.moveMatchOrder('${m.id}', 1)">⬇️</button>
+                    </div>
+                  </td>
                   <td><span class="wave-badge">Lượt ${m.wave}</span></td>
                   <td>
                     <span class="bracket-pill ${m.bracket === 'A' ? 'bracket-a' : 'bracket-b'}">
@@ -1810,6 +1974,9 @@
                       <button class="btn-xs btn-emerald" onclick="window.TCApp.selectMatchForScoring('${m.id}', true)">
                         ✏️ Điền điểm
                       </button>
+                      <button class="btn-xs btn-outline" onclick="window.TCApp.clearSingleMatchScore('${m.id}')" title="Xóa điểm trận này về Chưa thi (0-0)">
+                        🧹 Reset trận
+                      </button>
                       <button class="btn-xs btn-outline" onclick="window.TCApp.exportParentTeamPDF('${m.redTeamId}')" title="Xuất PDF kết quả Đội Đỏ gửi Phụ huynh">
                         📑 PDF Đỏ
                       </button>
@@ -1829,31 +1996,60 @@
 
   // ==================== VIEW 4: ĐỘI THI & ĐỒNG BỘ GOOGLE SHEETS ====================
   function renderTeamsAndSyncView() {
+    const countA = state.teams.filter(t => t.bracket === 'A').length;
+    const countB = state.teams.filter(t => t.bracket === 'B').length;
     return `
-      <!-- Ô DÁN LINK GOOGLE SHEET BẤT KỲ ĐỂ TỰ ĐỘNG CÀO DATA -->
+      <!-- 1. Ô DÁN LINK GOOGLE SHEET BẤT KỲ ĐỂ TỰ ĐỘNG CÀO DATA BẢNG ĐẤU -->
       <div class="sync-card" style="margin-bottom: 18px; border: 1px solid rgba(56, 189, 248, 0.45);">
-        <h3>🕷️ DÁN LINK GOOGLE SHEET ĐỂ TỰ ĐỘNG CÀO DỮ LIỆU ĐỘI &amp; TÊN HỌC SINH</h3>
+        <h3>🕷️ CÁCH 1: DÁN LINK GOOGLE SHEET ĐỂ TỰ ĐỘNG CÀO BẢNG ĐẤU (BẢNG A / BẢNG B / CẢ 2 BẢNG)</h3>
         <p class="sync-desc">
-          Chỉ cần copy nguyên đường link Google Sheet trên thanh địa chỉ trình duyệt (có cả <code>https://docs.google.com/spreadsheets/d/.../edit#gid=...</code>) dán vào dưới đây, hệ thống sẽ tự tách ID &amp; GID để cào danh sách đội + học sinh và xếp lịch xen kẽ A-B:
+          Dán nguyên đường link Google Sheet trên thanh địa chỉ trình duyệt (có cả <code>https://docs.google.com/spreadsheets/d/.../edit#gid=...</code>) vào ô bên dưới, sau đó chọn cào toàn bộ 2 bảng hoặc cào riêng từng bảng:
         </p>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
-          <input type="text" id="custom-sheet-url-input" class="input-text" style="flex:1;min-width:320px;"
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+          <input type="text" id="custom-sheet-url-input" class="input-text" style="flex:1;min-width:300px;"
             placeholder="Dán nguyên link Google Sheet của bạn vào đây (VD: https://docs.google.com/spreadsheets/d/.../edit#gid=...)"
             value="${state.config.customSheetUrl || state.config.yearEndSheetId}" />
-          <button class="btn btn-emerald" onclick="window.TCApp.scrapeCustomSheetUrl(document.getElementById('custom-sheet-url-input').value)">
-            🕷️ Cào Dữ Liệu Từ Link Sheet Này
+          <button class="btn btn-emerald" onclick="window.TCApp.scrapeCustomSheetUrl(document.getElementById('custom-sheet-url-input').value, 'replace_both')">
+            🕷️ Cào &amp; Tạo Mới Cả 2 Bảng (A &amp; B)
           </button>
-          <button class="btn btn-amber" onclick="window.TCApp.redrawSchedule()">
-            🎲 Bốc Thăm Lại Lịch Xen Kẽ A-B
+          <button class="btn btn-amber" onclick="window.TCApp.scrapeCustomSheetUrl(document.getElementById('custom-sheet-url-input').value, 'replace_A')">
+            ⚡ Cào Riêng Vào Bảng A (Junior)
+          </button>
+          <button class="btn btn-amber" onclick="window.TCApp.scrapeCustomSheetUrl(document.getElementById('custom-sheet-url-input').value, 'replace_B')">
+            🔥 Cào Riêng Vào Bảng B (Teen)
+          </button>
+          <button class="btn btn-outline" onclick="window.TCApp.scrapeCustomSheetUrl(document.getElementById('custom-sheet-url-input').value, 'update_existing')">
+            📝 Chỉ Cập Nhật Tên Học Sinh
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. Ô COPY - PASTE TRỰC TIẾP TỪ EXCEL / GOOGLE SHEET (KHÔNG CẦN MỞ QUYỀN PUBLIC SHEET) -->
+      <div class="sync-card" style="margin-bottom: 18px; border: 1px solid rgba(251, 191, 36, 0.45);">
+        <h3>📋 CÁCH 2: COPY — PASTE TRỰC TIẾP DỮ LIỆU ĐỘI TỪ EXCEL / GOOGLE SHEET</h3>
+        <p class="sync-desc">
+          Nếu file Google Sheet đang khóa quyền riêng tư, bạn chỉ cần bôi đen các dòng danh sách lớp &amp; học sinh trên Excel / Google Sheet rồi <code>Ctrl+C</code> ➔ dán (<code>Ctrl+V</code>) vào ô dưới đây (Mỗi dòng dạng: <code>Mã Lớp [Tab] Học sinh 1 [Tab] Học sinh 2</code> hoặc cấu trúc 2 dòng gộp ô của MindX):
+        </p>
+        <textarea id="paste-bracket-textarea" class="input-text" rows="4" style="width:100%;margin-top:8px;font-family:monospace;font-size:12px;"
+          placeholder="Ví dụ dán trực tiếp từ Excel/Sheet:&#10;TN-ROB-ARMA17&#9;Bùi Minh Khôi&#9;Nguyễn Bội Nhi&#10;TN-ROB-ARMA20&#9;Dương Đức Anh&#9;Bùi Quang Minh"></textarea>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+          <button class="btn btn-amber" onclick="window.TCApp.parsePastedBracket(document.getElementById('paste-bracket-textarea').value, 'A')">
+            ⚡ Nạp Dữ Liệu Đã Dán Vào Bảng A (Junior)
+          </button>
+          <button class="btn btn-emerald" onclick="window.TCApp.parsePastedBracket(document.getElementById('paste-bracket-textarea').value, 'B')">
+            🔥 Nạp Dữ Liệu Đã Dán Vào Bảng B (Teen)
+          </button>
+          <button class="btn btn-outline" onclick="document.getElementById('paste-bracket-textarea').value=''">
+            🧹 Xóa Ô Dán
           </button>
         </div>
       </div>
 
       <div class="sync-hub-grid">
         <div class="sync-card">
-          <h3>🔗 1. Kết nối trực tiếp 2 File Google Sheet của bạn</h3>
+          <h3>🔗 3. Đồng bộ tự động với 2 File Google Sheet Mặc Định</h3>
           <p class="sync-desc">
-            Hệ thống đã được cấu hình sẵn ID 2 file Google Sheet của bạn để đọc trực tiếp tên lớp, điểm Vòng 1 và tự động chọn ra <b>02 đại diện xuất sắc nhất</b> mỗi lớp vào Vòng 2:
+            Kết nối sẵn với ID 2 file Google Sheet của MindX Thái Nguyên để tự động chọn ra <b>02 đại diện xuất sắc nhất</b> mỗi lớp vào Vòng 2:
           </p>
           <div class="form-group">
             <label>ID Sheet 1: FORM CHẤM ĐIỂM - TECHCLASH 2026 (30 Lớp Vòng 1)</label>
@@ -1864,11 +2060,6 @@
             <label>ID Sheet 2: TN-ROBOTICS YEAR END MÙA 2 - 2026 (Tab: DS - HS vượt qua vòng 1)</label>
             <input type="text" class="input-text" value="${state.config.yearEndSheetId}"
               onchange="window.TCApp.updateConfig('yearEndSheetId', this.value)" />
-          </div>
-          <div class="form-group">
-            <label>URL Web App Google Apps Script (Tùy chọn - Để tự động ghi ngược lên Google Sheet):</label>
-            <input type="text" class="input-text" placeholder="https://script.google.com/macros/s/.../exec" value="${state.config.appsScriptUrl}"
-              onchange="window.TCApp.updateConfig('appsScriptUrl', this.value)" />
           </div>
           <div class="sync-btn-row">
             <button id="btn-sync-vong1" class="btn btn-emerald" onclick="window.TCApp.syncFromVong1Form()">
@@ -1881,30 +2072,47 @@
         </div>
 
         <div class="sync-card">
-          <h3>🪄 2. Tự động điền sang Sheet "DS - HS vượt qua vòng 1"</h3>
+          <h3>🛠️ 4. Công Cụ Xóa Data, Reset Trận &amp; Khôi Phục</h3>
           <p class="sync-desc">
-            Để file Google Sheet <b>TN-ROBOTICS YEAR END MÙA 2 - 2026</b> tự động nhặt Top 2 học sinh từ 30 tab lớp bên file <b>FORM CHẤM ĐIỂM VÒNG 1</b> điền vào cột <code>G</code> (Bảng Junior) và cột <code>R</code> (Bảng Teen):
+            Quản lý nhanh toàn bộ dữ liệu đội thi, xóa trắng từng bảng để nạp lại, hoặc reset thứ tự các trận đấu và tiến độ về <code>0/N</code>:
           </p>
-          <ol class="guide-steps">
-            <li>Mở file Google Sheet <b>TN-ROBOTICS YEAR END MÙA 2 - 2026</b>.</li>
-            <li>Vào menu <b>Tiện ích mở rộng (Extensions) ➔ Apps Script</b>.</li>
-            <li>Mở file <code>GoogleAppsScript_AutoSync.gs</code> trong thư mục dự án, dán vào và bấm <b>Lưu</b>.</li>
-            <li>Quay lại Google Sheet, bấm menu <b>🏆 TECH CLASH 2026 ➔ 1️⃣ Tự động lấy Top 2 Vòng 1 điền vào "DS - HS vượt qua vòng 1"</b>!</li>
-          </ol>
-          <div class="sync-btn-row">
-            <button class="btn btn-outline" onclick="window.TCApp.resetDefaultData()">
-              🔄 Khôi phục dữ liệu mặc định
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;">
+            <button class="btn btn-amber" onclick="window.TCApp.clearAllScoresToZero()">
+              🧹 Xóa Điểm Về 0đ (Tiến độ 0/${state.matches.length})
+            </button>
+            <button class="btn btn-outline" onclick="window.TCApp.resetMatchOrderToFirst()">
+              ⏮ Reset Về Trận #1
+            </button>
+            <button class="btn btn-outline" onclick="window.TCApp.redrawSchedule(false)">
+              🎲 Bốc Thăm Lại Lịch Xen Kẽ A-B
+            </button>
+            <button class="btn btn-outline" style="border-color:#ef4444;color:#fca5a5;" onclick="window.TCApp.wipeBracketData('A')">
+              🗑️ Xóa Trắng Bảng A (${countA} đội)
+            </button>
+            <button class="btn btn-outline" style="border-color:#ef4444;color:#fca5a5;" onclick="window.TCApp.wipeBracketData('B')">
+              🗑️ Xóa Trắng Bảng B (${countB} đội)
+            </button>
+            <button class="btn btn-outline" style="border-color:#ef4444;color:#fca5a5;" onclick="window.TCApp.wipeAllTeamsAndMatches()">
+              🗑️ Xóa Trắng Cả 2 Bảng &amp; Lịch
+            </button>
+            <button class="btn btn-emerald" onclick="window.TCApp.resetDefaultData()">
+              🔄 Khôi Phục Data Mặc Định (31 Đội)
             </button>
           </div>
         </div>
       </div>
 
-      <!-- BẢNG CHỈNH SỬA TRỰC TIẾP DANH SÁCH 31 ĐỘI & TÊN 2 HỌC SINH -->
+      <!-- BẢNG CHỈNH SỬA TRỰC TIẾP DANH SÁCH ĐỘI & TÊN 2 HỌC SINH -->
       <div class="tpc-board-panel" style="margin-top: 20px;">
-        <div class="tpc-board-header">
+        <div class="tpc-board-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
           <div>
-            <h2 class="tpc-board-title">📋 DANH SÁCH 31 ĐỘI TUYỂN VÒNG 2 & TÊN 2 HỌC SINH ĐẠI DIỆN</h2>
-            <div class="tpc-board-sub">Bạn có thể sửa trực tiếp tên học sinh hoặc tắt đội vắng mặt rồi bấm "Bốc thăm lại lịch đấu"</div>
+            <h2 class="tpc-board-title">📋 DANH SÁCH ${state.teams.length} ĐỘI TUYỂN VÒNG 2 (BẢNG A: ${countA} ĐỘI • BẢNG B: ${countB} ĐỘI)</h2>
+            <div class="tpc-board-sub">Bạn có thể sửa trực tiếp Mã Lớp, Tên Học Sinh, Thêm/Xóa đội rồi bấm "Bốc thăm lại lịch đấu"</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn-xs btn-amber" onclick="window.TCApp.addNewTeam('A')">+ Thêm Đội Bảng A</button>
+            <button class="btn-xs btn-emerald" onclick="window.TCApp.addNewTeam('B')">+ Thêm Đội Bảng B</button>
+            <button class="btn-xs btn-outline" onclick="window.TCApp.redrawSchedule(false)">🎲 Cập Nhật &amp; Xếp Lại Lịch Đấu</button>
           </div>
         </div>
         <div class="tpc-table-wrap">
@@ -1919,7 +2127,7 @@
                 <th>HỌC SINH ĐẠI DIỆN 2</th>
                 <th>ĐIỂM TB VÒNG 1</th>
                 <th>THAM GIA</th>
-                <th>XUẤT GỬI PHỤ HUYNH</th>
+                <th>THAO TÁC</th>
               </tr>
             </thead>
             <tbody>
@@ -1931,7 +2139,10 @@
                     </span>
                   </td>
                   <td><b>${t.code}</b></td>
-                  <td><b class="team-class-name">${t.className}</b></td>
+                  <td>
+                    <input type="text" class="input-inline" style="width:135px;font-weight:700;" value="${t.className}"
+                      onchange="window.TCApp.updateTeamField('${t.id}','className',this.value)" />
+                  </td>
                   <td>
                     <input type="text" class="input-inline" style="width:85px" value="${t.lec || ''}"
                       onchange="window.TCApp.updateTeamField('${t.id}','lec',this.value)" />
@@ -1950,9 +2161,14 @@
                       onchange="window.TCApp.updateTeamField('${t.id}','active',this.checked)" />
                   </td>
                   <td>
-                    <button class="btn-xs btn-emerald" onclick="window.TCApp.exportParentTeamPDF('${t.id}')">
-                      📑 Xuất PDF Phụ Huynh
-                    </button>
+                    <div style="display:flex;gap:6px;">
+                      <button class="btn-xs btn-emerald" onclick="window.TCApp.exportParentTeamPDF('${t.id}')">
+                        📑 PDF
+                      </button>
+                      <button class="btn-xs btn-outline" style="border-color:#ef4444;color:#fca5a5;" onclick="window.TCApp.deleteTeam('${t.id}')">
+                        🗑️ Xóa
+                      </button>
+                    </div>
                   </td>
                 </tr>
               `).join('')}
@@ -2194,6 +2410,7 @@
       exportParentTeamPDF(found.id);
     },
     scrapeCustomSheetUrl: scrapeFromAnyGoogleSheetUrl,
+    parsePastedBracket: parsePastedBracketData,
     redrawSchedule,
     toggleTimer,
     setTimerMode,
@@ -2210,12 +2427,165 @@
       t[field] = val;
       saveState(true, false);
     },
-    resetDefaultData() {
-      if (!confirm('Khôi phục dữ liệu 31 đội và lịch thi đấu về mặc định ban đầu?')) return;
-      localStorage.removeItem(STORAGE_KEY);
-      state = loadState();
+    clearAllScoresToZero() {
+      if (!confirm('Xóa toàn bộ điểm các trận về 0 — 0, đưa thứ tự về Trận #1 và đặt Tiến Độ về 0/' + state.matches.length + ' để bắt đầu giải thật?')) return;
+      if (liveSimTimer) {
+        clearInterval(liveSimTimer);
+        liveSimTimer = null;
+      }
+      Engine.populateDemoMatches(state.matches, 'clear');
+      if (state.matches.length > 0) {
+        state.matches.forEach((m, idx) => {
+          m.status = idx === 0 ? 'live' : 'pending';
+        });
+        selectedMatchId = state.matches[0].id;
+      }
+      scoringUnlocked = false;
+      state.config.customProgressText = '';
+      state.config.obsMainView = state.config.cutoutType || 'chroma_green';
+      setTimerMode('match');
+      saveState(true, true);
+      showToast('Đã xóa toàn bộ điểm về 0đ, đưa về Trận #1 & Tiến độ 0/' + state.matches.length + '!', 'success');
+    },
+    resetMatchOrderToFirst() {
+      if (state.matches.length === 0) return;
+      stopTimer();
+      scoringUnlocked = false;
+      state.matches.forEach((m, idx) => {
+        if (idx === 0) {
+          m.status = 'live';
+        } else if (m.redScore === null && m.blueScore === null) {
+          m.status = 'pending';
+        }
+      });
+      selectedMatchId = state.matches[0].id;
+      state.config.obsMainView = state.config.cutoutType || 'chroma_green';
+      setTimerMode('match');
+      saveState(true, true);
+      showToast('Đã đưa thứ tự trận đang thi về lại Trận #1 (' + state.matches[0].id + ')!', 'info');
+    },
+    clearSingleMatchScore(matchId) {
+      const m = state.matches.find(x => x.id === matchId);
+      if (!m) return;
+      m.redSheet = Engine.createEmptyScoreSheet();
+      m.blueSheet = Engine.createEmptyScoreSheet();
+      m.redScore = null;
+      m.blueScore = null;
+      m.status = 'pending';
+      m.completedAt = null;
+      saveState(true, true);
+      showToast('Đã xóa điểm Trận #' + m.matchNumber + ' về Chưa thi (0 - 0)!', 'info');
+    },
+    moveMatchOrder(matchId, delta) {
+      const idx = state.matches.findIndex(x => x.id === matchId);
+      if (idx === -1) return;
+      const targetIdx = idx + delta;
+      if (targetIdx < 0 || targetIdx >= state.matches.length) return;
+      const temp = state.matches[idx];
+      state.matches[idx] = state.matches[targetIdx];
+      state.matches[targetIdx] = temp;
+      state.matches.forEach((m, i) => {
+        m.matchNumber = i + 1;
+        m.id = 'M' + String(i + 1).padStart(2, '0');
+      });
+      selectedMatchId = state.matches[targetIdx].id;
+      saveState(true, true);
+      showToast('Đã đổi vị trí sang Trận #' + (targetIdx + 1) + '!', 'info');
+    },
+    wipeBracketData(bracketCode) {
+      if (!confirm('Bạn có chắc muốn xóa trắng toàn bộ đội của Bảng ' + bracketCode + ' để cào/nhập mới?')) return;
+      state.teams = state.teams.filter(t => t.bracket !== bracketCode);
+      state.matches = Engine.generateInterleavedSchedule(state.teams, false);
+      if (state.matches.length > 0) {
+        state.matches[0].status = 'live';
+        selectedMatchId = state.matches[0].id;
+      } else {
+        selectedMatchId = null;
+      }
+      saveState(true, true);
+      showToast('Đã xóa trắng Bảng ' + bracketCode + '!', 'warning');
+    },
+    wipeAllTeamsAndMatches() {
+      if (!confirm('Xóa trắng toàn bộ danh sách Đội thi (Bảng A & Bảng B) và Lịch đấu để bạn cào mới hoàn toàn từ Google Sheet?')) return;
+      stopTimer();
+      state.teams = [];
+      state.matches = [];
+      selectedMatchId = null;
+      state.config.customProgressText = '';
+      saveState(true, true);
+      activeTab = 'teams';
       renderAll();
-      showToast('🔄 Đã khôi phục dữ liệu gốc!', 'info');
+      showToast('Đã xóa trắng toàn bộ Đội & Lịch đấu! Mời bạn dán Link Google Sheet hoặc Copy-Paste để nạp bảng đấu mới.', 'warning');
+    },
+    addNewTeam(bracketCode) {
+      const bTeams = state.teams.filter(t => t.bracket === bracketCode);
+      const nextNum = bTeams.length + 1;
+      const code = bracketCode + String(nextNum).padStart(2, '0');
+      const newTeam = {
+        id: code + '_' + Date.now().toString().slice(-3),
+        code,
+        bracket: bracketCode,
+        seed: nextNum,
+        className: bracketCode === 'A' ? 'TN-ROB-ARM-MOI' : 'TN-C4K-GI-MOI',
+        lec: '',
+        student1: 'Học sinh 1',
+        student2: 'Học sinh 2',
+        v1Avg: 20,
+        active: true
+      };
+      state.teams.push(newTeam);
+      saveState(true, false);
+      showToast('Đã thêm đội ' + code + ' vào Bảng ' + bracketCode + '! Sau khi sửa tên hãy bấm "Cập Nhật & Xếp Lại Lịch Đấu".', 'success');
+    },
+    deleteTeam(teamId) {
+      const t = state.teams.find(x => x.id === teamId);
+      if (!t) return;
+      if (!confirm('Xóa đội ' + t.className + ' (' + t.code + ') khỏi danh sách thi đấu?')) return;
+      state.teams = state.teams.filter(x => x.id !== teamId);
+      state.matches = Engine.generateInterleavedSchedule(state.teams, false);
+      if (state.matches.length > 0) {
+        state.matches[0].status = 'live';
+        selectedMatchId = state.matches[0].id;
+      }
+      saveState(true, true);
+      showToast('Đã xóa đội ' + t.className + ' và cập nhật lại lịch đấu!', 'info');
+    },
+    setCustomProgressText(txt) {
+      state.config.customProgressText = String(txt || '').trim();
+      state.config.hideProgress = false;
+      saveState(true, false);
+      showToast(
+        state.config.customProgressText
+          ? 'Đã đặt chữ Tiến độ trên OBS: "' + state.config.customProgressText + '"'
+          : 'Đã bật chế độ Tự động đếm Tiến độ trận (0/' + state.matches.length + ')!',
+        'success'
+      );
+    },
+    toggleHideProgress() {
+      state.config.hideProgress = !state.config.hideProgress;
+      saveState(true, false);
+      showToast(
+        state.config.hideProgress
+          ? 'Đã ẨN thanh Tiến độ góc phải trên OBS!'
+          : 'Đã HIỆN lại thanh Tiến độ góc phải trên OBS!',
+        'info'
+      );
+    },
+    resetDefaultData() {
+      if (!confirm('Khôi phục dữ liệu 31 đội mặc định của MindX Thái Nguyên và đưa về Trận #1 (0/31)?')) return;
+      localStorage.removeItem(STORAGE_KEY);
+      state.teams = JSON.parse(JSON.stringify(Engine.INITIAL_TEAMS));
+      state.matches = Engine.generateInterleavedSchedule(state.teams, false);
+      Engine.populateDemoMatches(state.matches, 'clear');
+      if (state.matches.length > 0) {
+        state.matches[0].status = 'live';
+        selectedMatchId = state.matches[0].id;
+      }
+      state.config.customProgressText = '';
+      state.config.obsMainView = state.config.cutoutType || 'chroma_green';
+      setTimerMode('match');
+      saveState(true, true);
+      showToast('Đã khôi phục 31 đội gốc mặc định & đặt về Trận #1 (Tiến độ 0/31)!', 'info');
     },
     loadDemoPreset(mode) {
       if (liveSimTimer) {

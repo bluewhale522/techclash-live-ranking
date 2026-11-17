@@ -1154,12 +1154,19 @@
         const curMatch = getCurrentMatch();
         const progEl = document.getElementById('hud-progress');
         if (progEl) {
-          if (curMatch) {
-            const rT = getTeamById(curMatch.redTeamId);
-            const bT = getTeamById(curMatch.blueTeamId);
-            progEl.innerHTML = `ĐỎ: <span style="color:#fca5a5;">${rT.className}</span> vs XANH: <span style="color:#7dd3fc;">${bT.className}</span> &nbsp;|&nbsp; TIẾN ĐỘ: ${doneCount}/${state.matches.length}`;
+          if (state.config && state.config.hideProgress) {
+            progEl.style.display = 'none';
           } else {
-            progEl.textContent = `TIẾN ĐỘ: ${doneCount}/${state.matches.length} TRẬN`;
+            progEl.style.display = '';
+            const customProg = (state.config && state.config.customProgressText) ? state.config.customProgressText.trim() : '';
+            const progLabel = customProg || `TIẾN ĐỘ: ${doneCount}/${state.matches.length} TRẬN`;
+            if (curMatch) {
+              const rT = getTeamById(curMatch.redTeamId);
+              const bT = getTeamById(curMatch.blueTeamId);
+              progEl.innerHTML = `ĐỎ: <span style="color:#fca5a5;">${rT.className}</span> vs XANH: <span style="color:#7dd3fc;">${bT.className}</span> &nbsp;|&nbsp; ${progLabel}`;
+            } else {
+              progEl.textContent = progLabel;
+            }
           }
         }
 
@@ -1172,7 +1179,15 @@
       // KHUNG TRÊN BÊN PHẢI: CHỈ ĐỒNG HỒ ĐẾM NGƯỢC (1 DÒNG GỌN GÀNG, KHÔNG ICON THỪA)
       function renderTopRightTimer(curMatch) {
         const el = document.getElementById('box-top-right');
-        if (!el || !curMatch) return;
+        if (!el) return;
+        if (!curMatch) {
+          el.innerHTML = `
+            <div class="timer-match-badge">CHƯA CÓ TRẬN ĐẤU</div>
+            <div class="timer-big-clock">01:30</div>
+            <div class="timer-status-bar">ĐANG CHỜ NẠP LỊCH THI ĐẤU TỪ ADMIN</div>
+          `;
+          return;
+        }
 
         const rT = getTeamById(curMatch.redTeamId);
         const bT = getTeamById(curMatch.blueTeamId);
@@ -1275,12 +1290,25 @@
       // KHUNG LỚN BÊN TRÁI: HIỂN THỊ TỪNG BẢNG ĐẤU 1 (BẢNG A HOẶC BẢNG B), MỖI DÒNG 1 HÀNG NGANG DUY NHẤT
       function renderMainLeftBox(curMatch) {
         const el = document.getElementById('box-main-left');
-        if (!el || !curMatch) return;
+        if (!el) return;
+        const viewMode = state.config.obsMainView || 'ranking_A';
+        if (!curMatch) {
+          el.classList.remove('chroma-green-hole');
+          if (viewMode === 'chroma_green') {
+            el.innerHTML = `<div class="arena-video-hole chroma-green-hole"></div>`;
+          } else if (viewMode === 'camera' || viewMode === 'cutout_clean' || viewMode === 'arena') {
+            el.innerHTML = `<div class="arena-video-hole"></div>`;
+          } else {
+            const standings = Engine.computeStandings(state.teams, state.matches, state.config.rankBy);
+            const activeBracket = (viewMode === 'ranking_B') ? 'B' : 'A';
+            el.innerHTML = `<div class="dual-ranking-grid single-col">${activeBracket === 'B' ? renderBracketColumn('B', standings.B, null) : renderBracketColumn('A', standings.A, null)}</div>`;
+          }
+          return;
+        }
 
         const rT = getTeamById(curMatch.redTeamId);
         const bT = getTeamById(curMatch.blueTeamId);
         const isRevealed = curMatch.status === 'completed';
-        const viewMode = state.config.obsMainView || 'ranking_A';
 
         // Thanh VS Trận Hiện Tại trên đỉnh Khung Lớn (tất cả trên 1 dòng không nhảy hàng)
         const matchStripHtml = `

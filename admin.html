@@ -272,6 +272,49 @@
           </button>
         </div>
       </div>
+
+      <!-- HÀNG 3: QUẢN LÝ DATA, XÓA DATA, RESET THỨ TỰ TRẬN, CÀO BẢNG ĐẤU & CHỈNH TIẾN ĐỘ HIỂN THỊ -->
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding-top:8px;border-top:1px solid rgba(148,163,184,0.2);">
+        <div class="obs-remote-group">
+          <span style="font-size:12px;font-weight:800;color:#f87171;">QUẢN LÝ DATA &amp; RESET TRẬN:</span>
+          <button class="btn-xs btn-amber" onclick="window.TCApp.clearAllScoresToZero()" title="Xóa toàn bộ điểm test về 0đ, đưa về Trận #1 và tiến độ 0/N để bắt đầu giải thật">
+            Xóa Điểm Về 0đ (Tiến độ 0/N)
+          </button>
+          <button class="btn-xs btn-outline" onclick="window.TCApp.resetMatchOrderToFirst()" title="Đưa thứ tự trận đang thi đấu quay về lại Trận #1 (Giữ nguyên điểm hoặc lịch hiện tại)">
+            Reset Về Trận #1
+          </button>
+          <button class="btn-xs btn-outline" onclick="window.TCApp.redrawSchedule(false)" title="Xáo trộn & bốc thăm lại thứ tự các trận đấu xen kẽ A-B từ đầu">
+            Reset &amp; Bốc Thăm Lại Thứ Tự Trận
+          </button>
+          <button class="btn-xs btn-emerald" onclick="window.TCApp.switchTab('teams')" title="Mở bảng Cào Data Bảng A / Bảng B từ Google Sheet hoặc Dán Nhanh">
+            Cào Data Bảng Đấu (Google Sheet)
+          </button>
+          <button class="btn-xs btn-outline" style="border-color:#ef4444;color:#fca5a5;" onclick="window.TCApp.wipeAllTeamsAndMatches()" title="Xóa trắng danh sách đội & trận để cào mới hoàn toàn">
+            Xóa Trắng Data (Đội &amp; Trận)
+          </button>
+          <button class="btn-xs btn-outline" onclick="window.TCApp.resetDefaultData()" title="Khôi phục lại 31 đội gốc mặc định">
+            Reset Data Mặc Định (31 Đội)
+          </button>
+          <button class="btn-xs btn-outline" onclick="window.TCApp.loadDemoPreset('mid')" title="Nạp lại dữ liệu Demo 18/31 trận để test">
+            Nạp Demo Test (18/31)
+          </button>
+        </div>
+
+        <div class="obs-remote-group">
+          <span style="font-size:12px;font-weight:800;color:#a78bfa;">TIẾN ĐỘ TRÊN OBS:</span>
+          <input type="text" id="admin-progress-text" class="input-text" style="max-width:190px;padding:4px 8px;font-size:12px;"
+            placeholder="Trống = Auto (VD: 0/31)" />
+          <button class="btn-xs btn-emerald" onclick="window.TCApp.setCustomProgressText(document.getElementById('admin-progress-text').value)">
+            Cập nhật Tiến độ
+          </button>
+          <button class="btn-xs btn-outline" onclick="document.getElementById('admin-progress-text').value=''; window.TCApp.setCustomProgressText('')">
+            Auto Đếm Trận
+          </button>
+          <button class="btn-xs btn-outline" onclick="window.TCApp.toggleHideProgress()">
+            Ẩn/Hiện Tiến Độ
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
