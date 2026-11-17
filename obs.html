@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TECH CLASH 2026 — MÀN HÌNH PHÁT LIVESTREAM OBS (16:9 CHUẨN KHUNG MINDX)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,500;0,600;0,700;1,700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --cyan: #38bdf8;
+      --cyan-glow: #67e8f9;
+      --fire: #f97316;
+      --fire-red: #ef4444;
+      --gold: #fbbf24;
+      --emerald: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: transparent !important;
+      font-family: 'Inter', sans-serif;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* KHUNG LIVESTREAM 16:9 KHỚP CHÍNH XÁC TỪNG PIXEL VỚI ẢNH NỀN MINDX (1024x576 / 1920x1080) */
+    .livestream-canvas {
+      position: relative;
+      width: 100vw;
+      height: 56.25vw; /* Chuẩn 16:9 */
+      max-height: 100vh;
+      max-width: 177.78vh;
+      background: transparent;
+      overflow: hidden;
+    }
+
+    /* Lớp ảnh nền MindX tách riêng để hỗ trợ ĐỤC LỖ TRONG SUỐT (Alpha Cutout) ngay trong lòng Khung Lớn cho Camera OBS bên dưới */
+    .livestream-bg-layer {
+      position: absolute;
+      inset: 0;
+      background-image: url('obs-bg.jpg?v=4');
+      background-size: 100% 100%;
+      background-position: center;
+      background-repeat: no-repeat;
+      z-index: 0;
+      pointer-events: none;
+      transition: clip-path 0.35s ease, opacity 0.35s ease;
+    }
+
+    /* Chế độ ĐỤC LỖ KHUNG LỚN (x: 6.6% -> 71.8%, y: 18.0% -> 83.4%) */
+    body.cutout-main-hole .livestream-bg-layer {
+      clip-path: polygon(
+        0% 0%,
+        0% 100%,
+        6.6% 100%,
+        6.6% 18.0%,
+        71.8% 18.0%,
+        71.8% 83.4%,
+        6.6% 83.4%,
+        6.6% 100%,
+        100% 100%,
+        100% 0%
+      );
+    }
+
+    /* Chế độ ĐỤC LỖ CHROMA KEY XANH LÁ (#00FF00) trong lòng Khung Lớn */
+    .box-main-left.chroma-green-hole,
+    .arena-video-hole.chroma-green-hole {
+      background: #00ff00 !important;
+      box-shadow: inset 0 0 0 2px #00cc00;
+    }
+
+    /* Vùng đục lỗ hiển thị Video/Camera nằm ngay dưới Thanh Chữ Đội Đấu trên đầu Khung Lớn */
+    .arena-video-hole {
+      flex: 1;
+      width: 100%;
+      min-height: 0;
+      border-radius: 0.5vw;
+      background: transparent;
+      pointer-events: none;
+    }
+
+    /* Chế độ ẩn toàn bộ ảnh nền (Overlay trong suốt hoàn toàn) */
+    body.transparent-mode .livestream-bg-layer {
+      opacity: 0 !important;
+      background-image: none !important;
+    }
+
+    /* HIỆU ỨNG CHUYỂN CẢNH 3 GIÂY (STINGER TRANSITIONS LỬA & BĂNG ĐIỀU KHIỂN TỪ ADMIN) */
+    .stinger-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 9000;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      overflow: hidden;
+    }
+
+    .stinger-overlay.active {
+      visibility: visible;
+      animation: stingerMaster 3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .stinger-wing-fire {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(125deg, #7f1d1d 0%, #ea580c 48%, #fbbf24 50%, transparent 50.5%);
+      transform: translateX(-105%);
+    }
+
+    .stinger-wing-ice {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(125deg, transparent 49.5%, #38bdf8 50%, #0284c7 55%, #090d16 100%);
+      transform: translateX(105%);
+    }
+
+    .stinger-overlay.active .stinger-wing-fire {
+      animation: wingFireIn 3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .stinger-overlay.active .stinger-wing-ice {
+      animation: wingIceIn 3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .stinger-center-card {
+      position: relative;
+      z-index: 2;
+      background: rgba(6, 10, 22, 0.94);
+      border: 2px solid #67e8f9;
+      border-radius: 1vw;
+      padding: 1.5vw 3.2vw;
+      text-align: center;
+      box-shadow: 0 0 60px rgba(56, 189, 248, 0.8), 0 0 90px rgba(249, 115, 22, 0.6);
+      transform: scale(0.7);
+      opacity: 0;
+    }
+
+    .stinger-overlay.active .stinger-center-card {
+      animation: stingerCardPop 3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .stinger-title {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 2.5vw;
+      font-weight: 900;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      text-shadow: 0 0 24px rgba(56, 189, 248, 0.9);
+      white-space: nowrap;
+    }
+
+    .stinger-sub {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 1.05vw;
+      font-weight: 800;
+      color: #fbbf24;
+      margin-top: 0.35vw;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    @keyframes stingerMaster {
+      0% { opacity: 1; }
+      86% { opacity: 1; }
+      100% { opacity: 0; visibility: hidden; }
+    }
+
+    @keyframes wingFireIn {
+      0% { transform: translateX(-105%); }
+      20% { transform: translateX(0%); }
+      78% { transform: translateX(0%); }
+      100% { transform: translateX(-105%); }
+    }
+
+    @keyframes wingIceIn {
+      0% { transform: translateX(105%); }
+      20% { transform: translateX(0%); }
+      78% { transform: translateX(0%); }
+      100% { transform: translateX(105%); }
+    }
+
+    @keyframes stingerCardPop {
+      0% { transform: scale(0.65); opacity: 0; }
+      20% { transform: scale(1.03); opacity: 1; }
+      78% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(1.12); opacity: 0; }
+    }
+
+    /* Dòng tiêu đề Esports nằm gọn 1 dòng ở khoảng trống phía trên Khung Lớn */
+    .stream-top-hud {
+      position: absolute;
+      left: 6.3%;
+      top: 5.2%;
+      width: 65.8%;
+      height: 8.5%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1vw;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .hud-title-block {
+      display: flex;
+      align-items: center;
+      gap: 0.8vw;
+      min-width: 0;
+      white-space: nowrap;
+    }
+
+    .hud-live-badge {
+      background: linear-gradient(135deg, #dc2626 0%, #ea580c 100%);
+      color: #fff;
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 900;
+      font-size: 0.82vw;
+      letter-spacing: 0.1em;
+      padding: 0.36vw 0.8vw;
+      border-radius: 0.38vw;
+      box-shadow: 0 0 18px rgba(239, 68, 68, 0.7);
+      display: flex;
+      align-items: center;
+      gap: 0.4vw;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .hud-live-dot {
+      width: 0.5vw;
+      height: 0.5vw;
+      border-radius: 50%;
+      background: #fff;
+      animation: blinkDot 0.9s infinite alternate;
+    }
+
+    @keyframes blinkDot {
+      from { opacity: 0.3; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1.15); }
+    }
+
+    .hud-main-title {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 1.5vw;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-shadow: 0 2px 18px rgba(0, 0, 0, 0.95), 0 0 24px rgba(56, 189, 248, 0.45);
+    }
+
+    .hud-progress-pill {
+      background: rgba(7, 13, 25, 0.82);
+      border: 1px solid rgba(103, 232, 249, 0.55);
+      padding: 0.4vw 0.95vw;
+      border-radius: 999px;
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 0.82vw;
+      font-weight: 800;
+      color: #67e8f9;
+      box-shadow: 0 0 18px rgba(56, 189, 248, 0.3);
+      backdrop-filter: blur(6px);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* ============================================================================
+     * KHUNG 1: KHUNG LỚN BÊN TRÁI (x: 6.3% -> 72.1%, y: 17.6% -> 83.8%)
+     * ============================================================================ */
+    .box-main-left {
+      position: absolute;
+      left: 6.3%;
+      top: 17.6%;
+      width: 65.8%;
+      height: 66.2%;
+      padding: 0.8vw 0.9vw;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6vw;
+      overflow: hidden;
+      border-radius: 0.6vw;
+    }
+
+    /* Thanh VS Trận Hiện Tại trên đỉnh Khung Lớn (Nền đặc 100% để không bị xuyên thấu khi lọc Chroma Key #00FF00) */
+    .live-match-strip {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 0.8vw;
+      background: linear-gradient(90deg, #6b1414 0%, #090e1c 50%, #093b5e 100%);
+      border: 1.5px solid rgba(103, 232, 249, 0.65);
+      border-radius: 0.55vw;
+      padding: 0.52vw 1vw;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.75);
+      flex-shrink: 0;
+      position: relative;
+      z-index: 5;
+    }
+
+    .strip-team {
+      display: flex;
+      flex-direction: column;
+      gap: 0.12vw;
+    }
+
+    .strip-team.blue {
+      text-align: right;
+      align-items: flex-end;
+    }
+
+    .strip-side-label {
+      font-size: 0.64vw;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .strip-side-label.red { color: #fca5a5; }
+    .strip-side-label.blue { color: #7dd3fc; }
+
+    .strip-team-name {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 1.2vw;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.1;
+    }
+
+    .strip-team-stu {
+      font-size: 0.74vw;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+
+    .strip-vs-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0.25vw 0.85vw;
+      background: rgba(6, 10, 20, 0.9);
+      border: 1px solid rgba(251, 191, 36, 0.55);
+      border-radius: 0.45vw;
+      min-width: 9.2vw;
+    }
+
+    .strip-vs-top {
+      font-size: 0.62vw;
+      font-weight: 800;
+      color: var(--gold);
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    .strip-vs-main {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 1.38vw;
+      font-weight: 900;
+      color: #ffffff;
+      line-height: 1.1;
+    }
+
+    /* Lưới 2 Bảng Xếp Hạng (Bảng A bên Lửa Đỏ/Cam - Bảng B bên Băng Xanh) */
+    .dual-ranking-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75vw;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .dual-ranking-grid.single-col {
+      grid-template-columns: 1fr;
+    }
+
+    .rank-column {
+      display: flex;
+      flex-direction: column;
+      border-radius: 0.55vw;
+      overflow: hidden;
+      backdrop-filter: blur(5px);
+      min-height: 0;
+    }
+
+    .rank-column.fire-a {
+      background: linear-gradient(180deg, rgba(67, 20, 7, 0.62) 0%, rgba(9, 13, 24, 0.72) 100%);
+      border: 1px solid rgba(249, 115, 22, 0.45);
+    }
+
+    .rank-column.ice-b {
+      background: linear-gradient(180deg, rgba(8, 47, 73, 0.62) 0%, rgba(9, 13, 24, 0.72) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.45);
+    }
+
+    .rank-col-header {
+      padding: 0.42vw 0.75vw;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 0.84vw;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      flex-shrink: 0;
+    }
+
+    .rank-col-header.fire-a {
+      background: linear-gradient(90deg, rgba(234, 88, 12, 0.55) 0%, rgba(15, 23, 42, 0.7) 100%);
+      color: #fed7aa;
+      border-bottom: 1px solid rgba(249, 115, 22, 0.4);
+    }
+
+    .rank-col-header.ice-b {
+      background: linear-gradient(90deg, rgba(2, 132, 199, 0.55) 0%, rgba(15, 23, 42, 0.7) 100%);
+      color: #bae6fd;
+      border-bottom: 1px solid rgba(56, 189, 248, 0.4);
+    }
+
+    .rank-table-head {
+      display: grid;
+      grid-template-columns: 3.2vw 14.5vw 1fr 4.8vw 4.8vw 5.8vw;
+      align-items: center;
+      padding: 0.35vw 0.8vw;
+      background: rgba(6, 10, 20, 0.88);
+      font-size: 0.68vw;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .rank-scroll-viewport {
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: none;
+      position: relative;
+    }
+
+    .rank-scroll-viewport::-webkit-scrollbar {
+      display: none;
+    }
+
+    .rank-row-item {
+      display: grid;
+      grid-template-columns: 3.2vw 14.5vw 1fr 4.8vw 4.8vw 5.8vw;
+      align-items: center;
+      padding: 0.34vw 0.8vw;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+      font-size: 0.78vw;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    .rank-row-item.rank-1 {
+      background: linear-gradient(90deg, rgba(251, 191, 36, 0.25) 0%, rgba(15, 23, 42, 0.4) 100%);
+    }
+    .rank-row-item.rank-2 {
+      background: linear-gradient(90deg, rgba(226, 232, 240, 0.16) 0%, rgba(15, 23, 42, 0.4) 100%);
+    }
+    .rank-row-item.rank-3 {
+      background: linear-gradient(90deg, rgba(249, 115, 22, 0.2) 0%, rgba(15, 23, 42, 0.4) 100%);
+      border-bottom: 1.5px solid rgba(251, 191, 36, 0.65);
+    }
+    .rank-row-item.is-playing {
+      box-shadow: inset 0 0 0 1px #38bdf8;
+      background: rgba(56, 189, 248, 0.18);
+    }
+
+    .r-pos {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 900;
+      font-size: 0.86vw;
+      color: #f8fafc;
+      white-space: nowrap;
+    }
+
+    .r-class {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 800;
+      font-size: 0.82vw;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding-right: 0.5vw;
+    }
+
+    .r-stu {
+      font-size: 0.76vw;
+      font-weight: 600;
+      color: #e2e8f0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding-right: 0.5vw;
+    }
+
+    .r-turn {
+      text-align: center;
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: 0.8vw;
+      color: #e2e8f0;
+      white-space: nowrap;
+    }
+
+    .r-total {
+      text-align: right;
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 900;
+      font-size: 0.92vw;
+      color: var(--gold);
+      white-space: nowrap;
+    }
+
+    /* Bảng Nổ Kết Quả Trận Đấu (Hiện ra khi Trọng tài vừa điền điểm xong & bấm Hiển Thị) */
+    .score-reveal-overlay {
+      flex: 1;
+      background: rgba(7, 11, 22, 0.88);
+      border: 2px solid rgba(251, 191, 36, 0.75);
+      border-radius: 0.65vw;
+      padding: 1vw 1.4vw;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.85);
+      animation: zoomReveal 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes zoomReveal {
+      from { opacity: 0; transform: scale(0.92); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* ============================================================================
+     * KHUNG 2: KHUNG TRÊN BÊN PHẢI — ĐỒNG HỒ ĐẾM NGƯỢC 90S (x: 75.1% -> 97.0%, y: 17.6% -> 48.5%)
+     * ============================================================================ */
+    .box-top-right {
+      position: absolute;
+      left: 75.1%;
+      top: 17.6%;
+      width: 21.9%;
+      height: 30.9%;
+      padding: 0.8vw 0.9vw;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      text-align: center;
+      border-radius: 0.6vw;
+      background: rgba(6, 11, 24, 0.45);
+      backdrop-filter: blur(3px);
+    }
+
+    .timer-match-badge {
+      width: 100%;
+      padding: 0.28vw 0.6vw;
+      border-radius: 0.35vw;
+      background: rgba(8, 47, 73, 0.75);
+      border: 1px solid rgba(103, 232, 249, 0.45);
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 0.76vw;
+      font-weight: 800;
+      color: #67e8f9;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .timer-big-clock {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 4.75vw;
+      font-weight: 900;
+      line-height: 0.95;
+      color: #ffffff;
+      letter-spacing: 0.03em;
+      text-shadow: 0 0 28px rgba(56, 189, 248, 0.85), 0 4px 14px rgba(0, 0, 0, 0.9);
+    }
+
+    .timer-big-clock.swap-warning {
+      color: #fbbf24;
+      text-shadow: 0 0 32px rgba(251, 191, 36, 0.95);
+      animation: pulseClock 0.45s infinite alternate;
+    }
+
+    .timer-big-clock.ended {
+      color: #f87171;
+      text-shadow: 0 0 30px rgba(239, 68, 68, 0.9);
+    }
+
+    @keyframes pulseClock {
+      from { transform: scale(0.96); }
+      to { transform: scale(1.04); }
+    }
+
+    .timer-status-bar {
+      width: 100%;
+      padding: 0.38vw 0.55vw;
+      border-radius: 0.4vw;
+      font-size: 0.72vw;
+      font-weight: 800;
+      background: rgba(15, 23, 42, 0.88);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      color: #f1f5f9;
+      line-height: 1.25;
+    }
+
+    .timer-status-bar.swap-warning {
+      background: linear-gradient(90deg, #b45309, #d97706);
+      border-color: #fde68a;
+      color: #fff;
+    }
+
+    .timer-status-bar.revealed {
+      background: linear-gradient(90deg, #065f46, #047857);
+      border-color: #6ee7b7;
+      color: #ecfdf5;
+    }
+
+    /* ============================================================================
+     * KHUNG 3: KHUNG DƯỚI BÊN PHẢI — NEXT ROUND (x: 75.1% -> 97.0%, y: 53.3% -> 83.8%)
+     * ============================================================================ */
+    .box-bottom-right {
+      position: absolute;
+      left: 75.1%;
+      top: 53.3%;
+      width: 21.9%;
+      height: 30.5%;
+      padding: 0.75vw 0.9vw;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border-radius: 0.6vw;
+      background: rgba(6, 11, 24, 0.45);
+      backdrop-filter: blur(3px);
+    }
+
+    .next-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(103, 232, 249, 0.35);
+      padding-bottom: 0.3vw;
+    }
+
+    .next-title {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 0.84vw;
+      font-weight: 900;
+      color: var(--gold);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .next-bracket-pill {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 0.7vw;
+      font-weight: 800;
+      padding: 0.14vw 0.5vw;
+      border-radius: 0.3vw;
+      background: rgba(56, 189, 248, 0.22);
+      color: #7dd3fc;
+      border: 1px solid rgba(56, 189, 248, 0.45);
+    }
+
+    .next-vs-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 0.38vw;
+    }
+
+    .next-card-side {
+      padding: 0.4vw 0.6vw;
+      border-radius: 0.42vw;
+      display: flex;
+      flex-direction: column;
+      gap: 0.1vw;
+    }
+
+    .next-card-side.red {
+      background: linear-gradient(90deg, rgba(153, 27, 27, 0.68) 0%, rgba(15, 23, 42, 0.82) 100%);
+      border-left: 0.26vw solid #ef4444;
+    }
+
+    .next-card-side.blue {
+      background: linear-gradient(90deg, rgba(3, 105, 161, 0.68) 0%, rgba(15, 23, 42, 0.82) 100%);
+      border-left: 0.26vw solid #38bdf8;
+    }
+
+    .next-card-class {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 0.9vw;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .next-card-stu {
+      font-size: 0.66vw;
+      font-weight: 600;
+      color: #e2e8f0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .next-ondeck-bar {
+      font-size: 0.65vw;
+      color: #cbd5e1;
+      background: rgba(9, 14, 26, 0.82);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      padding: 0.28vw 0.55vw;
+      border-radius: 0.35vw;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ============================================================================
+     * KHUNG 4: THANH NGANG DƯỚI CÙNG — LIVE TICKER (x: 6.0% -> 97.0%, y: 89.6% -> 95.1%)
+     * ============================================================================ */
+    .box-bottom-ticker {
+      position: absolute;
+      left: 6.0%;
+      top: 89.6%;
+      width: 91.0%;
+      height: 5.5%;
+      border-radius: 0.4vw;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      background: rgba(6, 10, 22, 0.78);
+    }
+
+    .ticker-badge {
+      height: 100%;
+      padding: 0 1.1vw;
+      background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+      color: #ffffff;
+      border-right: 2px solid #fca5a5;
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 0.82vw;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      z-index: 2;
+      text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+      box-shadow: 4px 0 16px rgba(239, 68, 68, 0.65);
+    }
+
+    .ticker-marquee {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      height: 100%;
+    }
+
+    .ticker-content {
+      display: inline-flex;
+      align-items: center;
+      gap: 2.5vw;
+      white-space: nowrap;
+      padding-left: 1.5vw;
+      font-size: 0.8vw;
+      font-weight: 700;
+      color: #f8fafc;
+      animation: marqueeScroll 36s linear infinite;
+    }
+
+    @keyframes marqueeScroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* Thanh điều khiển mini chỉ hiện khi di chuột lên sát mép trên (không lộ trên Livestream) */
+    .obs-hover-toolbar {
+      position: fixed;
+      top: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 6px;
+      padding: 5px 10px;
+      background: rgba(9, 13, 24, 0.92);
+      border: 1px solid rgba(56, 189, 248, 0.45);
+      border-radius: 999px;
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .obs-hover-toolbar:hover {
+      opacity: 1;
+    }
+
+    .tbtn {
+      background: rgba(30, 41, 59, 0.9);
+      color: #e2e8f0;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .tbtn.active {
+      background: #0284c7;
+      color: #fff;
+      border-color: #38bdf8;
+    }
+  </style>
+</head>
+<body>
+  <!-- KHUNG LIVESTREAM 16:9 CHUẨN ẢNH MINDX (Đã ẩn hoàn toàn nút sang Admin để gửi link riêng cho máy phát OBS) -->
+  <div class="livestream-canvas">
+    <!-- Lớp ảnh nền hỗ trợ Đục Lỗ Trong Suốt (Cutout) ngay trong lòng Khung Lớn -->
+    <div class="livestream-bg-layer" id="livestream-bg-layer"></div>
+
+    <!-- Hiệu ứng Chuyển Cảnh (Stinger Transitions Lửa - Băng điều khiển từ Admin) -->
+    <div class="stinger-overlay" id="stinger-overlay">
+      <div class="stinger-wing-fire"></div>
+      <div class="stinger-wing-ice"></div>
+      <div class="stinger-center-card">
+        <div class="stinger-title" id="stinger-title">TECH CLASH: FINALE 2026</div>
+        <div class="stinger-sub" id="stinger-sub">MINDX THÁI NGUYÊN • VÒNG 2 CHUNG KẾT ĐỒNG ĐỘI</div>
+      </div>
+    </div>
+
+    <!-- Tiêu đề HUD trên đỉnh (1 dòng gọn gàng, không xuống dòng) -->
+    <div class="stream-top-hud">
+      <div class="hud-title-block">
+        <div class="hud-live-badge"><span class="hud-live-dot"></span> LIVE STREAM</div>
+        <div class="hud-main-title">TECH CLASH: FINALE 2026 — VÒNG 2 ĐỒNG ĐỘI</div>
+      </div>
+      <div class="hud-progress-pill" id="hud-progress">TIẾN ĐỘ: 18/31 TRẬN</div>
+    </div>
+
+    <!-- 1. KHUNG LỚN BÊN TRÁI (BẢNG XẾP HẠNG LIVE TỪNG BẢNG / KẾT QUẢ TRẬN / CAMERA SA BÀN) -->
+    <div class="box-main-left" id="box-main-left"></div>
+
+    <!-- 2. KHUNG TRÊN BÊN PHẢI (CHỈ ĐỒNG HỒ ĐẾM NGƯỢC 90S -> HẾT GIỜ ĐIỀN XONG MỚI HIỆN ĐIỂM) -->
+    <div class="box-top-right" id="box-top-right"></div>
+
+    <!-- 3. KHUNG DƯỚI BÊN PHẢI (NEXT ROUND - TRẬN TIẾP THEO) -->
+    <div class="box-bottom-right" id="box-bottom-right"></div>
+
+    <!-- 4. THANH NGANG DƯỚI CÙNG (MINDX THÁI NGUYÊN MARQUEE) -->
+    <div class="box-bottom-ticker">
+      <div class="ticker-badge">MINDX THÁI NGUYÊN</div>
+      <div class="ticker-marquee">
+        <div class="ticker-content" id="ticker-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script src="vex-sfx.js"></script>
+  <script>
+    (function() {
+      const Engine = window.TechClashEngine;
+      const STORAGE_KEY = 'TECHCLASH_2026_VONG2_DEMO_V2';
+      const bc = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('techclash_2026_vong2_channel') : null;
+
+      let state = loadState();
+      // Mặc định trên Livestream đục lỗ trong suốt 100% Khung Chính 16:9 để hiển thị Video/Camera OBS (hoặc chuyển sang BXH/Kết quả từ Admin)
+      if (!state.config.obsMainView || state.config.obsMainView === 'arena') {
+        state.config.obsMainView = 'camera';
+      }
+
+      let timerState = {
+        mode: 'match',
+        totalSec: 90,
+        remainingSec: 90,
+        running: false,
+        endTime: null
+      };
+      let serverTimeOffset = 0;
+      let localEndTime = null;
+      const API_BASE = (typeof window !== 'undefined' && window.location.protocol.startsWith('http'))
+        ? ''
+        : 'http://127.0.0.1:8088';
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && Array.isArray(parsed.teams) && Array.isArray(parsed.matches)) {
+              return parsed;
+            }
+          }
+        } catch (e) {}
+        const teams = JSON.parse(JSON.stringify(Engine.INITIAL_TEAMS));
+        const matches = Engine.generateInterleavedSchedule(teams, false);
+        Engine.populateDemoMatches(matches, 'mid');
+        return {
+          config: { ...Engine.DEFAULT_CONFIG, obsMainView: 'camera' },
+          teams,
+          matches,
+          lastUpdated: new Date().toISOString()
+        };
+      }
+
+      function getTeamById(id) {
+        return state.teams.find(t => t.id === id) || {
+          id, code: id, className: id, student1: 'Học sinh 1', student2: 'Học sinh 2', bracket: 'A'
+        };
+      }
+
+      function getCurrentMatch() {
+        let m = state.matches.find(x => x.status === 'live');
+        if (!m) m = state.matches.find(x => x.status === 'pending');
+        if (!m && state.matches.length > 0) m = state.matches[state.matches.length - 1];
+        return m;
+      }
+
+      function getNextMatches(curMatch) {
+        if (!curMatch) return [];
+        const idx = state.matches.findIndex(x => x.id === curMatch.id);
+        return state.matches.slice(idx + 1, idx + 3);
+      }
+
+      function formatSec(sec) {
+        const m = Math.floor(sec / 60);
+        const s = sec % 60;
+        return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+      }
+
+      let lastTransitionId = (state.config && state.config.transitionTrigger && state.config.transitionTrigger.id) || 0;
+      let lastObsView = (state.config && state.config.obsMainView) || 'ranking_A';
+
+      // ==================== BỘ TẠO SOUND EFFECT TRANSITIONS 3 GIÂY (ESPORTS STINGER WHOOSH + IMPACT BOOM) ====================
+      let stingerAudioUrl = null;
+      let stingerAudioCtx = null;
+
+      function buildStingerWavUrl() {
+        if (stingerAudioUrl) return stingerAudioUrl;
+        try {
+          const sampleRate = 44100;
+          const duration = 3.0;
+          const numSamples = Math.floor(sampleRate * duration);
+          const buffer = new ArrayBuffer(44 + numSamples * 2);
+          const view = new DataView(buffer);
+
+          function writeStr(offset, str) {
+            for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+          }
+          writeStr(0, 'RIFF');
+          view.setUint32(4, 36 + numSamples * 2, true);
+          writeStr(8, 'WAVE');
+          writeStr(12, 'fmt ');
+          view.setUint32(16, 16, true);
+          view.setUint16(20, 1, true); // PCM
+          view.setUint16(22, 1, true); // Mono
+          view.setUint32(24, sampleRate, true);
+          view.setUint32(28, sampleRate * 2, true);
+          view.setUint16(32, 2, true);
+          view.setUint16(34, 16, true);
+          writeStr(36, 'data');
+          view.setUint32(40, numSamples * 2, true);
+
+          let noiseState = 0;
+          let phaseSub = 0, phaseRiser = 0, phaseC1 = 0, phaseC2 = 0, phaseC3 = 0;
+
+          for (let i = 0; i < numSamples; i++) {
+            const t = i / sampleRate;
+            let sample = 0;
+            const white = Math.random() * 2 - 1;
+
+            // 1. 0.00s -> 0.45s: Tiếng gió Whoosh lao vào + Riser tăng tốc khi 2 cánh Lửa & Băng khép lại
+            if (t < 0.45) {
+              const env = Math.sin((t / 0.45) * Math.PI);
+              const alpha = 0.08 + 0.35 * (t / 0.45);
+              noiseState = noiseState + alpha * (white - noiseState);
+              const riserFreq = 110 * Math.pow(4.0, t / 0.45);
+              phaseRiser += (2 * Math.PI * riserFreq) / sampleRate;
+              sample += noiseState * env * 0.55 + Math.sin(phaseRiser) * env * 0.3;
+            }
+
+            // 2. 0.36s -> 1.85s: Tiếng nổ Sub-Bass Impact Boom + Hợp âm Cyber (C3 - G3 - C4 - E4) khi thẻ chữ bung ra
+            if (t >= 0.36 && t < 1.95) {
+              const dt = t - 0.36;
+              const boomEnv = Math.exp(-dt * 4.5);
+              const subFreq = 42 + 115 * Math.exp(-dt * 14);
+              phaseSub += (2 * Math.PI * subFreq) / sampleRate;
+              const subWave = Math.sin(phaseSub) * boomEnv * 0.75;
+
+              const chordEnv = Math.min(1, dt / 0.03) * Math.exp(-dt * 2.1);
+              phaseC1 += (2 * Math.PI * 261.63) / sampleRate; // C4
+              phaseC2 += (2 * Math.PI * 392.00) / sampleRate; // G4
+              phaseC3 += (2 * Math.PI * 523.25) / sampleRate; // C5
+              const chordWave = (Math.sin(phaseC1) * 0.35 + Math.sin(phaseC2) * 0.3 + Math.sin(phaseC3) * 0.25) * chordEnv * 0.45;
+
+              // Tiếng va chạm kim loại lúc 0.36s
+              const hitEnv = Math.exp(-dt * 22);
+              sample += subWave + chordWave + white * hitEnv * 0.35;
+            }
+
+            // 3. 2.15s -> 2.95s: Tiếng gió Swoosh mở cánh ra cảnh mới ở giây thứ 3
+            if (t >= 2.15 && t < 2.95) {
+              const dt2 = (t - 2.15) / 0.8;
+              const env2 = Math.sin(dt2 * Math.PI);
+              const alpha2 = 0.4 - 0.32 * dt2;
+              noiseState = noiseState + alpha2 * (white - noiseState);
+              const dropFreq = 360 * Math.pow(0.35, dt2);
+              phaseRiser += (2 * Math.PI * dropFreq) / sampleRate;
+              sample += noiseState * env2 * 0.5 + Math.sin(phaseRiser) * env2 * 0.22;
+            }
+
+            const clamped = Math.max(-1, Math.min(1, sample * 0.9));
+            view.setInt16(44 + i * 2, clamped < 0 ? clamped * 0x8000 : clamped * 0x7FFF, true);
+          }
+
+          const blob = new Blob([buffer], { type: 'audio/wav' });
+          stingerAudioUrl = URL.createObjectURL(blob);
+        } catch (err) {}
+        return stingerAudioUrl;
+      }
+
+      function playTransitionSoundEffect() {
+        if (state.config && state.config.transitionSound === false) return;
+        try {
+          const url = buildStingerWavUrl();
+          if (url) {
+            const audio = new Audio(url);
+            audio.volume = 0.9;
+            const playPromise = audio.play();
+            if (playPromise && typeof playPromise.catch === 'function') {
+              playPromise.catch(() => playWebAudioFallback());
+            }
+            return;
+          }
+        } catch (e) {}
+        playWebAudioFallback();
+      }
+
+      function playWebAudioFallback() {
+        try {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (!AudioCtx) return;
+          if (!stingerAudioCtx) stingerAudioCtx = new AudioCtx();
+          if (stingerAudioCtx.state === 'suspended') stingerAudioCtx.resume();
+          const now = stingerAudioCtx.currentTime;
+
+          // Riser + Impact Boom
+          const osc = stingerAudioCtx.createOscillator();
+          const gain = stingerAudioCtx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(110, now);
+          osc.frequency.exponentialRampToValueAtTime(440, now + 0.36);
+          osc.frequency.setValueAtTime(140, now + 0.37);
+          osc.frequency.exponentialRampToValueAtTime(38, now + 1.4);
+
+          gain.gain.setValueAtTime(0.01, now);
+          gain.gain.linearRampToValueAtTime(0.45, now + 0.36);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
+          osc.connect(gain);
+          gain.connect(stingerAudioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 1.55);
+        } catch (e) {}
+      }
+
+      // Tự động mở khóa âm thanh trên trình duyệt khi có tương tác đầu tiên
+      ['click', 'keydown', 'touchstart'].forEach(evt => {
+        window.addEventListener(evt, () => {
+          buildStingerWavUrl();
+          if (stingerAudioCtx && stingerAudioCtx.state === 'suspended') {
+            stingerAudioCtx.resume().catch(() => {});
+          }
+        }, { once: true });
+      });
+
+      function triggerStingerOverlay(titleText, subText) {
+        const ov = document.getElementById('stinger-overlay');
+        const tEl = document.getElementById('stinger-title');
+        const sEl = document.getElementById('stinger-sub');
+        if (!ov) return;
+        if (tEl) tEl.textContent = titleText || state.config.transitionTitle || 'TECH CLASH: FINALE 2026';
+        if (sEl) sEl.textContent = subText || state.config.transitionSub || 'MINDX THÁI NGUYÊN • VÒNG 2 CHUNG KẾT ĐỒNG ĐỘI';
+        ov.classList.remove('active');
+        void ov.offsetWidth;
+        ov.classList.add('active');
+        playTransitionSoundEffect();
+      }
+
+      function renderAll() {
+        const viewMode = state.config.obsMainView || 'ranking_A';
+        const trig = state.config.transitionTrigger;
+
+        // Phát hiệu ứng Transitions (3 giây) khi Admin bấm nút Transition hoặc đổi cảnh trên Admin
+        if (trig && trig.id && trig.id !== lastTransitionId) {
+          lastTransitionId = trig.id;
+          triggerStingerOverlay(trig.title, trig.subtitle);
+        } else if (viewMode !== lastObsView) {
+          lastObsView = viewMode;
+          const autoTitle = viewMode === 'result'
+            ? 'KẾT QUẢ CHÍNH THỨC'
+            : (viewMode === 'ranking_B'
+                ? 'BẢNG XẾP HẠNG LIVE • BẢNG B (TEEN CODER)'
+                : (viewMode === 'ranking_A' || viewMode === 'ranking_split'
+                    ? 'BẢNG XẾP HẠNG LIVE • BẢNG A (JUNIOR CODER)'
+                    : (state.config.transitionTitle || 'TRỰC TIẾP THI ĐẤU')));
+          triggerStingerOverlay(autoTitle, state.config.transitionSub || 'MINDX THÁI NGUYÊN • TECH CLASH 2026');
+        }
+
+        if (state.config.obsBgMode === 'transparent') {
+          document.body.classList.add('transparent-mode');
+        } else {
+          document.body.classList.remove('transparent-mode');
+        }
+
+        // Bật chế độ ĐỤC LỖ TRONG SUỐT 100% (Alpha Cutout) ngay trong lòng Khung Chính khi chọn Đục lỗ Camera / Video / Chroma Key
+        if (viewMode === 'camera' || viewMode === 'cutout_clean' || viewMode === 'arena' || viewMode === 'chroma_green') {
+          document.body.classList.add('cutout-main-hole');
+        } else {
+          document.body.classList.remove('cutout-main-hole');
+        }
+
+        const doneCount = state.matches.filter(m => m.status === 'completed').length;
+        const curMatch = getCurrentMatch();
+        const progEl = document.getElementById('hud-progress');
+        if (progEl) {
+          if (curMatch) {
+            const rT = getTeamById(curMatch.redTeamId);
+            const bT = getTeamById(curMatch.blueTeamId);
+            progEl.innerHTML = `ĐỎ: <span style="color:#fca5a5;">${rT.className}</span> vs XANH: <span style="color:#7dd3fc;">${bT.className}</span> &nbsp;|&nbsp; TIẾN ĐỘ: ${doneCount}/${state.matches.length}`;
+          } else {
+            progEl.textContent = `TIẾN ĐỘ: ${doneCount}/${state.matches.length} TRẬN`;
+          }
+        }
+
+        renderTopRightTimer(curMatch);
+        renderBottomRightNextRound(curMatch);
+        renderMainLeftBox(curMatch);
+        renderTicker();
+      }
+
+      // KHUNG TRÊN BÊN PHẢI: CHỈ ĐỒNG HỒ ĐẾM NGƯỢC (1 DÒNG GỌN GÀNG, KHÔNG ICON THỪA)
+      function renderTopRightTimer(curMatch) {
+        const el = document.getElementById('box-top-right');
+        if (!el || !curMatch) return;
+
+        const rT = getTeamById(curMatch.redTeamId);
+        const bT = getTeamById(curMatch.blueTeamId);
+        const rem = timerState.remainingSec;
+        const isSwap = timerState.mode === 'match' && rem <= 50 && rem >= 40 && rem > 0;
+        const isEnded = rem <= 0;
+        const isRevealed = curMatch.status === 'completed';
+
+        let statusText = `ĐỎ: ${rT.className} vs XANH: ${bT.className}`;
+        let statusCls = '';
+
+        if (isRevealed) {
+          statusText = `ĐÃ CÔNG BỐ: ĐỎ ${curMatch.redScore}đ — XANH ${curMatch.blueScore}đ`;
+          statusCls = 'revealed';
+        } else if (isEnded) {
+          statusText = 'HẾT GIỜ — TRỌNG TÀI ĐANG CHẤM ĐIỂM';
+          statusCls = 'swap-warning';
+        } else if (isSwap) {
+          const swapWords = { 10:'TEN (10)', 9:'NINE (9)', 8:'EIGHT (8)', 7:'SEVEN (7)', 6:'SIX (6)', 5:'FIVE (5)', 4:'FOUR (4)', 3:'THREE (3)', 2:'TWO (2)', 1:'ONE (1)', 0:'SWITCH!' };
+          const cWord = swapWords[rem - 40] || '';
+          statusText = `ĐỔI TABLET (50s–40s): ${cWord} • QUÊN = -5Đ`;
+          statusCls = 'swap-warning';
+        } else if (timerState.mode === 'prep') {
+          statusText = '30 GIÂY CHUẨN BỊ ĐẶT ROBOT';
+        }
+
+        el.innerHTML = `
+          <div class="timer-match-badge">
+            TRẬN #${curMatch.matchNumber} • LƯỢT ${curMatch.wave} • BẢNG ${curMatch.bracket}
+          </div>
+          <div class="timer-big-clock ${isSwap ? 'swap-warning' : ''} ${isEnded && !isRevealed ? 'ended' : ''}">
+            ${formatSec(timerState.remainingSec)}
+          </div>
+          <div class="timer-status-bar ${statusCls}">
+            ${statusText}
+          </div>
+        `;
+      }
+
+      // KHUNG DƯỚI BÊN PHẢI: NEXT ROUND (1 DÒNG MỖI THÀNH PHẦN, KHÔNG ICON THỪA)
+      function renderBottomRightNextRound(curMatch) {
+        const el = document.getElementById('box-bottom-right');
+        if (!el) return;
+
+        const upcoming = getNextMatches(curMatch);
+        const nextM = upcoming[0];
+        const afterM = upcoming[1];
+
+        if (!nextM) {
+          el.innerHTML = `
+            <div class="next-header-row">
+              <span class="next-title">NEXT ROUND</span>
+              <span class="next-bracket-pill">HOÀN TẤT</span>
+            </div>
+            <div style="margin:auto;text-align:center;font-size:0.85vw;font-weight:700;color:#e2e8f0;white-space:nowrap;">
+              Đã đến trận cuối cùng của giải đấu
+            </div>
+            <div class="next-ondeck-bar">Chuẩn bị tổng kết trao giải Bảng A &amp; Bảng B</div>
+          `;
+          return;
+        }
+
+        const rT = getTeamById(nextM.redTeamId);
+        const bT = getTeamById(nextM.blueTeamId);
+        const afterR = afterM ? getTeamById(afterM.redTeamId) : null;
+        const afterB = afterM ? getTeamById(afterM.blueTeamId) : null;
+
+        el.innerHTML = `
+          <div class="next-header-row">
+            <span class="next-title">NEXT ROUND (TRẬN KẾ TIẾP)</span>
+            <span class="next-bracket-pill">TRẬN #${nextM.matchNumber} • BẢNG ${nextM.bracket}</span>
+          </div>
+
+          <div class="next-vs-cards">
+            <div class="next-card-side red">
+              <div class="next-card-class">
+                <span>SÂN ĐỎ: ${rT.className}</span>
+                <span style="font-size:0.68vw;color:#fca5a5;">${rT.code} • Lượt ${nextM.redTurn}</span>
+              </div>
+              <div class="next-card-stu">${rT.student1} - ${rT.student2}</div>
+            </div>
+
+            <div class="next-card-side blue">
+              <div class="next-card-class">
+                <span>SÂN XANH: ${bT.className}</span>
+                <span style="font-size:0.68vw;color:#7dd3fc;">${bT.code} • Lượt ${nextM.blueTurn}</span>
+              </div>
+              <div class="next-card-stu">${bT.student1} - ${bT.student2}</div>
+            </div>
+          </div>
+
+          <div class="next-ondeck-bar">
+            ${afterM
+              ? `Chuẩn bị tiếp (Trận #${afterM.matchNumber} - Bảng ${afterM.bracket}): <b>${afterR.className}</b> vs <b>${afterB.className}</b>`
+              : `Trận #${nextM.matchNumber} là trận khép lại Vòng 2`}
+          </div>
+        `;
+      }
+
+      // KHUNG LỚN BÊN TRÁI: HIỂN THỊ TỪNG BẢNG ĐẤU 1 (BẢNG A HOẶC BẢNG B), MỖI DÒNG 1 HÀNG NGANG DUY NHẤT
+      function renderMainLeftBox(curMatch) {
+        const el = document.getElementById('box-main-left');
+        if (!el || !curMatch) return;
+
+        const rT = getTeamById(curMatch.redTeamId);
+        const bT = getTeamById(curMatch.blueTeamId);
+        const isRevealed = curMatch.status === 'completed';
+        const viewMode = state.config.obsMainView || 'ranking_A';
+
+        // Thanh VS Trận Hiện Tại trên đỉnh Khung Lớn (tất cả trên 1 dòng không nhảy hàng)
+        const matchStripHtml = `
+          <div class="live-match-strip">
+            <div class="strip-team red">
+              <div class="strip-side-label red">ĐỘI SÂN ĐỎ • LƯỢT ${curMatch.redTurn}/2</div>
+              <div class="strip-team-name">${rT.className} <span style="font-size:0.78vw;color:#fca5a5;">(${rT.code})</span></div>
+              <div class="strip-team-stu">${rT.student1} - ${rT.student2}</div>
+            </div>
+
+            <div class="strip-vs-center">
+              <div class="strip-vs-top">TRẬN #${curMatch.matchNumber} • BẢNG ${curMatch.bracket}</div>
+              <div class="strip-vs-main">
+                ${isRevealed
+                  ? `<span style="color:#fca5a5;">${curMatch.redScore}</span> : <span style="color:#7dd3fc;">${curMatch.blueScore}</span>`
+                  : `<span style="color:#fbbf24;">ĐANG ĐẤU</span>`}
+              </div>
+            </div>
+
+            <div class="strip-team blue">
+              <div class="strip-side-label blue">ĐỘI SÂN XANH • LƯỢT ${curMatch.blueTurn}/2</div>
+              <div class="strip-team-name"><span style="font-size:0.78vw;color:#7dd3fc;">(${bT.code})</span> ${bT.className}</div>
+              <div class="strip-team-stu">${bT.student1} - ${bT.student2}</div>
+            </div>
+          </div>
+        `;
+
+        // Chế độ ĐỤC LỖ KHUNG CHÍNH (Giữ lại khung chữ trên đầu của mỗi trận, phần dưới đục lỗ cho Video/Camera hoặc Chroma Key #00FF00)
+        el.classList.remove('chroma-green-hole');
+        if (viewMode === 'cutout_clean') {
+          el.innerHTML = '';
+          return;
+        }
+        if (viewMode === 'camera' || viewMode === 'arena') {
+          el.innerHTML = `
+            ${matchStripHtml}
+            <div class="arena-video-hole"></div>
+          `;
+          return;
+        }
+        if (viewMode === 'chroma_green') {
+          el.innerHTML = `
+            ${matchStripHtml}
+            <div class="arena-video-hole chroma-green-hole"></div>
+          `;
+          return;
+        }
+
+        // Chế độ Nổ Bảng Kết Quả Trận Vừa Đấu (Sau khi Hết giờ & Trọng tài bấm Hiển Thị Điểm)
+        if (viewMode === 'result') {
+          const targetM = state.config.lastRevealedMatchId
+            ? (state.matches.find(x => x.id === state.config.lastRevealedMatchId) || curMatch)
+            : curMatch;
+          const rmR = getTeamById(targetM.redTeamId);
+          const rmB = getTeamById(targetM.blueTeamId);
+          const rs = targetM.redSheet || {};
+          const bs = targetM.blueSheet || {};
+          const rScore = targetM.redScore !== null ? targetM.redScore : Engine.calculateSheetScore(rs, targetM.bracket);
+          const bScore = targetM.blueScore !== null ? targetM.blueScore : Engine.calculateSheetScore(bs, targetM.bracket);
+
+          el.innerHTML = `
+            ${matchStripHtml}
+            <div class="score-reveal-overlay">
+              <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(251,191,36,0.35);padding-bottom:0.4vw;white-space:nowrap;">
+                <span style="font-family:'Chakra Petch';font-size:1.05vw;font-weight:900;color:var(--gold);">
+                  KẾT QUẢ CHÍNH THỨC • TRẬN #${targetM.matchNumber} (LƯỢT ${targetM.wave} • BẢNG ${targetM.bracket})
+                </span>
+                <span style="font-family:'Chakra Petch';font-size:0.78vw;font-weight:800;color:#67e8f9;">
+                  MINDX THÁI NGUYÊN • OFFICIAL SCORE
+                </span>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:1.2vw;margin:0.4vw 0;">
+                <div style="background:rgba(153,27,27,0.45);border:1px solid #ef4444;border-radius:0.55vw;padding:0.65vw 1vw;display:flex;justify-content:space-between;align-items:center;min-width:0;">
+                  <div style="min-width:0;overflow:hidden;">
+                    <div style="font-size:0.7vw;color:#fca5a5;font-weight:800;white-space:nowrap;">SÂN ĐỎ (LƯỢT ${targetM.redTurn})</div>
+                    <div style="font-family:'Chakra Petch';font-size:1.2vw;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${rmR.className} (${rmR.code})</div>
+                    <div style="font-size:0.72vw;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${rmR.student1} - ${rmR.student2}</div>
+                  </div>
+                  <div style="font-family:'Chakra Petch';font-size:2.6vw;font-weight:900;color:#fca5a5;margin-left:0.6vw;">${rScore}</div>
+                </div>
+
+                <div style="font-family:'Chakra Petch';font-size:1.1vw;font-weight:900;color:var(--gold);">FINAL</div>
+
+                <div style="background:rgba(3,105,161,0.45);border:1px solid #38bdf8;border-radius:0.55vw;padding:0.65vw 1vw;display:flex;justify-content:space-between;align-items:center;min-width:0;">
+                  <div style="font-family:'Chakra Petch';font-size:2.6vw;font-weight:900;color:#7dd3fc;margin-right:0.6vw;">${bScore}</div>
+                  <div style="text-align:right;min-width:0;overflow:hidden;">
+                    <div style="font-size:0.7vw;color:#7dd3fc;font-weight:800;white-space:nowrap;">SÂN XANH (LƯỢT ${targetM.blueTurn})</div>
+                    <div style="font-family:'Chakra Petch';font-size:1.2vw;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${rmB.className} (${rmB.code})</div>
+                    <div style="font-size:0.72vw;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${rmB.student1} - ${rmB.student2}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8vw;font-size:0.74vw;">
+                <div style="background:rgba(15,23,42,0.8);padding:0.45vw 0.75vw;border-radius:0.45vw;border-left:3px solid #ef4444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                  <b>Đội Đỏ:</b> To <b>${rs.big||0}</b> • Vừa <b>${rs.med||0}</b> • Nhỏ <b>${rs.small||0}</b>
+                  ${targetM.bracket === 'B' ? ` • Chồng <b>${(rs.stackBig||0)+(rs.stackMed||0)+(rs.stackSmall||0)}</b>` : ''}
+                  • Khối ĐB <b>${rs.special > 0 ? '+10đ' : '0'}</b> • Về đích <b>${rs.parked > 0 ? '+5đ' : '0'}</b>
+                  ${rs.noTabletSwap > 0 ? ' • <span style="color:#f87171;">Quên đổi (-5đ)</span>' : ''}
+                </div>
+                <div style="background:rgba(15,23,42,0.8);padding:0.45vw 0.75vw;border-radius:0.45vw;border-left:3px solid #38bdf8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                  <b>Đội Xanh:</b> To <b>${bs.big||0}</b> • Vừa <b>${bs.med||0}</b> • Nhỏ <b>${bs.small||0}</b>
+                  ${targetM.bracket === 'B' ? ` • Chồng <b>${(bs.stackBig||0)+(bs.stackMed||0)+(bs.stackSmall||0)}</b>` : ''}
+                  • Khối ĐB <b>${bs.special > 0 ? '+10đ' : '0'}</b> • Về đích <b>${bs.parked > 0 ? '+5đ' : '0'}</b>
+                  ${bs.noTabletSwap > 0 ? ' • <span style="color:#f87171;">Quên đổi (-5đ)</span>' : ''}
+                </div>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        // Mặc định: Hiển thị Bảng Xếp Hạng TỪNG BẢNG ĐẤU 1 (Bảng A hoặc Bảng B) toàn chiều ngang, mỗi đội 1 dòng duy nhất
+        const standings = Engine.computeStandings(state.teams, state.matches, state.config.rankBy);
+        const activeBracket = (viewMode === 'ranking_B') ? 'B' : 'A';
+
+        el.innerHTML = `
+          ${matchStripHtml}
+          <div class="dual-ranking-grid single-col">
+            ${activeBracket === 'B'
+              ? renderBracketColumn('B', standings.B, curMatch)
+              : renderBracketColumn('A', standings.A, curMatch)}
+          </div>
+        `;
+      }
+
+      function renderBracketColumn(bCode, list, curMatch) {
+        const isA = bCode === 'A';
+        return `
+          <div class="rank-column ${isA ? 'fire-a' : 'ice-b'}">
+            <div class="rank-col-header ${isA ? 'fire-a' : 'ice-b'}">
+              <span>${isA ? 'BẢNG XẾP HẠNG BẢNG A • JUNIOR CODER (12 ĐỘI VEX GO)' : 'BẢNG XẾP HẠNG BẢNG B • TEEN CODER (19 ĐỘI VEX IQ)'}</span>
+              <span style="font-size:0.68vw;opacity:0.95;">XẾP HẠNG TỔNG ĐIỂM 2 LƯỢT</span>
+            </div>
+            <div class="rank-table-head">
+              <div>HẠNG</div>
+              <div>ĐỘI (MÃ LỚP)</div>
+              <div>THÀNH VIÊN (2 HỌC SINH)</div>
+              <div style="text-align:center;">LƯỢT 1</div>
+              <div style="text-align:center;">LƯỢT 2</div>
+              <div style="text-align:right;">TỔNG</div>
+            </div>
+            <div class="rank-scroll-viewport" id="scroll-col-${bCode}">
+              ${list.map(item => {
+                const rCls = item.rank === 1 ? 'rank-1' : (item.rank === 2 ? 'rank-2' : (item.rank === 3 ? 'rank-3' : ''));
+                const isNow = curMatch && (curMatch.redTeamId === item.id || curMatch.blueTeamId === item.id);
+                return `
+                  <div class="rank-row-item ${rCls} ${isNow ? 'is-playing' : ''}">
+                    <div class="r-pos">#${item.rank}</div>
+                    <div class="r-class">${item.className} <span style="font-weight:600;color:#94a3b8;font-size:0.68vw;">(${item.code})</span></div>
+                    <div class="r-stu">${item.student1} - ${item.student2}</div>
+                    <div class="r-turn">${item.turn1Score !== null ? item.turn1Score : '-'}</div>
+                    <div class="r-turn">${item.turn2Score !== null ? item.turn2Score : '-'}</div>
+                    <div class="r-total">${item.displayPrimary}</div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      function renderTicker() {
+        const el = document.getElementById('ticker-content');
+        if (!el) return;
+        const defaultPromo = 'MindX Thái Nguyên - Trường học công nghệ đào tạo Lập trình Coding AI và Robotics dành cho học sinh từ 5-18 tuổi - Trải nghiệm miễn phí - Ưu đãi học phí lên đến 25% - Địa chỉ: Tầng 3, Tòa Viettel, số 04 Hoàng Văn Thụ, Thái Nguyên - Hotline: 0865 559 258 - MindX 12 năm rực sáng - Thế hệ chuyển mình';
+        const promo = (state.config && state.config.customTickerText) ? state.config.customTickerText : defaultPromo;
+        if (el.getAttribute('data-text') === promo) return;
+        const highlighted = promo
+          .replace(/MindX Thái Nguyên/g, '<b style="color:#ff3b3b;text-shadow:0 0 10px rgba(239,68,68,0.6);">MindX Thái Nguyên</b>')
+          .replace(/MindX 12 năm rực sáng/g, '<b style="color:#ff3b3b;text-shadow:0 0 10px rgba(239,68,68,0.6);">MindX 12 năm rực sáng</b>');
+        const html = `<span>${highlighted}</span>`;
+        el.innerHTML = html + html + html;
+        el.setAttribute('data-text', promo);
+      }
+
+      // Tự động cuộn mượt Bảng B (19 đội) để trên Livestream khán giả nhìn thấy hết từ hạng 1 đến hạng 19
+      let scrollDir = 1;
+      setInterval(() => {
+        const vpB = document.getElementById('scroll-col-B');
+        if (vpB && vpB.scrollHeight > vpB.clientHeight) {
+          vpB.scrollTop += scrollDir * 1;
+          if (vpB.scrollTop + vpB.clientHeight >= vpB.scrollHeight - 2) scrollDir = -1;
+          else if (vpB.scrollTop <= 0) scrollDir = 1;
+        }
+      }, 60);
+
+      let lastPlayedTimerSec = null;
+
+      function triggerVexTimerAudioOnChange(prevRunning, prevSec, newRunning, newSec, mode) {
+        if (!window.VexIQSound) return;
+        if (state.config && state.config.transitionSound === false) return;
+        if (!prevRunning && newRunning && newSec > 0) {
+          window.VexIQSound.playStart();
+          lastPlayedTimerSec = newSec;
+          return;
+        }
+        if (newSec !== prevSec && (newRunning || newSec === 0)) {
+          if (lastPlayedTimerSec !== newSec) {
+            lastPlayedTimerSec = newSec;
+            window.VexIQSound.onTimerSecond(newSec, mode);
+          }
+        }
+      }
+
+      function applyIncomingTimerState(incoming, srvNow) {
+        if (!incoming) return false;
+        if (typeof srvNow === 'number' && srvNow > 0) {
+          serverTimeOffset = srvNow - Date.now();
+        }
+        const prevSec = timerState.remainingSec;
+        const prevMode = timerState.mode;
+        const prevRunning = timerState.running;
+
+        timerState.mode = incoming.mode || 'match';
+        timerState.totalSec = incoming.totalSec || (timerState.mode === 'prep' ? 30 : 90);
+        timerState.running = !!incoming.running;
+        timerState.endTime = incoming.endTime || null;
+
+        if (timerState.running) {
+          if (timerState.endTime) {
+            const nowEst = Date.now() + serverTimeOffset;
+            timerState.remainingSec = Math.max(0, Math.ceil((timerState.endTime - nowEst) / 1000));
+            localEndTime = Date.now() + timerState.remainingSec * 1000;
+          } else {
+            // Nếu chỉ nhận remainingSec từ BroadcastChannel mà chưa có endTime
+            if (!prevRunning || Math.abs((incoming.remainingSec || 0) - timerState.remainingSec) > 1) {
+              timerState.remainingSec = typeof incoming.remainingSec === 'number' ? incoming.remainingSec : timerState.totalSec;
+              localEndTime = Date.now() + timerState.remainingSec * 1000;
+            }
+          }
+        } else {
+          localEndTime = null;
+          if (typeof incoming.remainingSec === 'number') {
+            timerState.remainingSec = incoming.remainingSec;
+          }
+        }
+
+        triggerVexTimerAudioOnChange(prevRunning, prevSec, timerState.running, timerState.remainingSec, timerState.mode);
+        return (prevSec !== timerState.remainingSec || prevMode !== timerState.mode || prevRunning !== timerState.running);
+      }
+
+      // Bộ đếm ngược nội bộ 200ms ngay bên trong OBS Browser Source giúp đồng hồ nhảy mượt từng giây 01:30 -> 00:00 mà KHÔNG BAO GIỜ cần Reload OBS
+      setInterval(() => {
+        if (!timerState.running) return;
+        const prevSec = timerState.remainingSec;
+        let left = timerState.remainingSec;
+        if (timerState.endTime) {
+          const nowEst = Date.now() + serverTimeOffset;
+          left = Math.max(0, Math.ceil((timerState.endTime - nowEst) / 1000));
+        } else if (localEndTime) {
+          left = Math.max(0, Math.ceil((localEndTime - Date.now()) / 1000));
+        }
+        if (left !== prevSec) {
+          timerState.remainingSec = left;
+          triggerVexTimerAudioOnChange(true, prevSec, left > 0, left, timerState.mode);
+          if (left <= 0) {
+            timerState.running = false;
+            localEndTime = null;
+          }
+          renderTopRightTimer(getCurrentMatch());
+        }
+      }, 200);
+
+      if (bc) {
+        bc.onmessage = (ev) => {
+          if (!ev.data) return;
+          if (ev.data.type === 'STATE_UPDATED' && ev.data.state) {
+            state = ev.data.state;
+            if (ev.data.timerState) applyIncomingTimerState(ev.data.timerState);
+            renderAll();
+          } else if (ev.data.type === 'TIMER_TICK' && ev.data.timerState) {
+            if (applyIncomingTimerState(ev.data.timerState)) {
+              renderTopRightTimer(getCurrentMatch());
+            }
+          }
+        };
+      }
+
+      window.addEventListener('storage', (ev) => {
+        if (ev.key === STORAGE_KEY && ev.newValue) {
+          try {
+            state = JSON.parse(ev.newValue);
+            renderAll();
+          } catch (e) {}
+        }
+      });
+
+      // Đồng bộ Real-time giữa Máy Điền Điểm (admin.html) và Máy Phát OBS (obs.html) qua Live Server (Hỗ trợ cả link Web, Localhost và Local File trong OBS)
+      {
+        let lastServerStamp = '';
+
+        function pullLatestFromServer() {
+          fetch(API_BASE + '/api/state?_t=' + Date.now(), { cache: 'no-store' })
+            .then(r => r.json())
+            .then(res => {
+              if (!res) return;
+              let needFullRender = false;
+              if (res.state) {
+                const newStamp = res.state.lastUpdated || '';
+                if (newStamp !== lastServerStamp) {
+                  lastServerStamp = newStamp;
+                  state = res.state;
+                  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+                  needFullRender = true;
+                }
+              } else {
+                fetch(API_BASE + '/api/state', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ state })
+                }).catch(() => {});
+              }
+              if (res.timerState) {
+                const timerChanged = applyIncomingTimerState(res.timerState, res.serverNow);
+                if (!needFullRender && timerChanged) {
+                  renderTopRightTimer(getCurrentMatch());
+                }
+              }
+              if (needFullRender) {
+                renderAll();
+              }
+            })
+            .catch(() => {});
+        }
+
+        pullLatestFromServer();
+        setInterval(pullLatestFromServer, 700);
+
+        function connectSSE() {
+          try {
+            const es = new EventSource(API_BASE + '/api/stream');
+            es.onmessage = (ev) => {
+              try {
+                const data = JSON.parse(ev.data);
+                if ((data.type === 'INIT' || data.type === 'STATE_UPDATED') && data.state) {
+                  lastServerStamp = data.state.lastUpdated || '';
+                  state = data.state;
+                  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+                  if (data.timerState) applyIncomingTimerState(data.timerState);
+                  renderAll();
+                } else if (data.type === 'TIMER_TICK' && data.timerState) {
+                  if (applyIncomingTimerState(data.timerState)) {
+                    renderTopRightTimer(getCurrentMatch());
+                  }
+                }
+              } catch (e) {}
+            };
+            es.onerror = () => {
+              try { es.close(); } catch (e) {}
+              setTimeout(connectSSE, 2500);
+            };
+          } catch (e) {}
+        }
+        connectSSE();
+      }
+
+      window.OBSStream = {
+        setView(v) {
+          state.config.obsMainView = v;
+          state.lastUpdated = new Date().toISOString();
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          fetch(API_BASE + '/api/state', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ state })
+          }).catch(() => {});
+          renderAll();
+        },
+        toggleBg() {
+          state.config.obsBgMode = state.config.obsBgMode === 'transparent' ? 'image' : 'transparent';
+          state.lastUpdated = new Date().toISOString();
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          fetch(API_BASE + '/api/state', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ state })
+          }).catch(() => {});
+          renderAll();
+        },
+        toggleFullscreen() {
+          if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(() => {});
+          } else {
+            document.exitFullscreen().catch(() => {});
+          }
+        }
+      };
+
+      document.addEventListener('DOMContentLoaded', renderAll);
+    })();
+  </script>
+</body>
+</html>

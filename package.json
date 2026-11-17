@@ -1,0 +1,12 @@
+{
+  "name": "techclash-live-ranking",
+  "version": "1.0.0",
+  "description": "Tech Clash Finale 2026 - MindX Thai Nguyen Live OBS & Referee Scoring System",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

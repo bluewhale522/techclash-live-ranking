@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TECH CLASH 2026 — Giao Diện 2: Quản Trị Trọng Tài, Điền Điểm & Xuất Excel/PDF</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,500;0,600;0,700;1,700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Giao diện Login Trọng tài & Khóa/Mở form chấm điểm sau khi hết giờ */
+    .login-overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 50% 25%, #1e293b 0%, #050811 85%);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 440px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      border-radius: 16px;
+      padding: 32px 28px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85);
+      text-align: center;
+    }
+
+    .login-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #ef4444, #f97316);
+      color: #fff;
+      font-weight: 800;
+      font-size: 12px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .login-title {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .login-sub {
+      font-size: 13px;
+      color: #94a3b8;
+      margin-bottom: 22px;
+    }
+
+    .login-field {
+      text-align: left;
+      margin-bottom: 14px;
+    }
+
+    .login-field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: #cbd5e1;
+      margin-bottom: 6px;
+    }
+
+    .login-input {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      background: rgba(9, 13, 22, 0.9);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .obs-remote-bar {
+      background: linear-gradient(90deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.92));
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 12px;
+      padding: 12px 18px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .obs-remote-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .scoring-lock-banner {
+      background: linear-gradient(90deg, rgba(180, 83, 9, 0.35), rgba(15, 23, 42, 0.9));
+      border: 1px solid rgba(251, 191, 36, 0.55);
+      border-radius: 12px;
+      padding: 14px 20px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .scoring-lock-banner.ready-to-score {
+      background: linear-gradient(90deg, rgba(6, 95, 70, 0.45), rgba(15, 23, 42, 0.9));
+      border-color: #10b981;
+    }
+
+    .scoring-lock-banner.already-revealed {
+      background: linear-gradient(90deg, rgba(37, 99, 235, 0.4), rgba(15, 23, 42, 0.9));
+      border-color: #38bdf8;
+    }
+
+    .pads-locked {
+      opacity: 0.42;
+      pointer-events: none;
+      filter: grayscale(0.45);
+      transition: all 0.25s ease;
+    }
+
+    .parent-export-bar {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+  </style>
+</head>
+<body>
+  <!-- MÀN HÌNH ĐĂNG NHẬP TRỌNG TÀI / BTC -->
+  <div id="login-modal" class="login-overlay" style="display:none;">
+    <div class="login-card">
+      <div class="login-badge">🔐 TRỌNG TÀI &amp; BAN TỔ CHỨC</div>
+      <div class="login-title">ĐĂNG NHẬP CHẤM ĐIỂM</div>
+      <div class="login-sub">Chỉ Trọng tài được phân quyền mới có thể điều khiển đồng hồ &amp; công bố điểm lên màn hình OBS</div>
+
+      <form onsubmit="AdminPortal.handleLogin(event)">
+        <div class="login-field">
+          <label>Tài khoản Trọng tài / Bàn điều khiển</label>
+          <input type="text" id="login-user" class="login-input" value="admin" required />
+        </div>
+        <div class="login-field">
+          <label>Mã PIN bảo mật (Mặc định: 2026)</label>
+          <input type="password" id="login-pin" class="login-input" value="2026" placeholder="Nhập mã PIN..." required />
+        </div>
+        <div id="login-err" style="color:#f87171;font-size:13px;font-weight:700;margin-bottom:10px;display:none;">
+          ❌ Sai tài khoản hoặc mã PIN! (Mặc định: admin / 2026)
+        </div>
+        <button type="submit" class="btn btn-emerald" style="width:100%;padding:12px;font-size:15px;justify-content:center;">
+          🚀 Đăng Nhập Vào Bàn Trọng Tài
+        </button>
+      </form>
+      <div style="margin-top:14px;font-size:12px;color:#64748b;">
+        Mẹo: Đã điền sẵn <code>admin</code> / <code>2026</code> để bạn bấm vào thẳng khi test!
+      </div>
+    </div>
+  </div>
+
+  <!-- HEADER CHÍNH CỦA GIAO DIỆN 2 (ADMIN & ĐIỀN ĐIỂM) -->
+  <header class="top-header">
+    <div class="brand-box">
+      <div class="brand-logo-badge">ADMIN • TRỌNG TÀI</div>
+      <div>
+        <div class="brand-title">BÀN ĐIỀU KHIỂN &amp; ĐIỀN ĐIỂM VÒNG 2 (01 SA BÀN)</div>
+        <div class="brand-sub">Đếm Ngược 90s ➔ Hết Giờ Điền Điểm ➔ Bấm Hiển Thị Ra Màn Hình OBS ➔ Xuất Excel/PDF Gửi Phụ Huynh</div>
+      </div>
+    </div>
+
+    <nav class="nav-tabs" role="tablist">
+      <button class="nav-tab-btn active" data-tab="referee" onclick="window.TCApp.switchTab('referee')">
+        ⏱ 1. Đếm Ngược &amp; Điền Điểm (1 Sa Bàn)
+      </button>
+      <button class="nav-tab-btn" data-tab="schedule" onclick="window.TCApp.switchTab('schedule')">
+        📅 2. Lịch Xen Kẽ A-B &amp; Xuất PDF Phụ Huynh
+      </button>
+      <button class="nav-tab-btn" data-tab="ranking" onclick="window.TCApp.switchTab('ranking')">
+        🏆 3. Bảng Xếp Hạng &amp; Xuất Excel/PDF
+      </button>
+      <button class="nav-tab-btn" data-tab="teams" onclick="window.TCApp.switchTab('teams')">
+        🕷️ 4. Dán Link Google Sheet Cào Data (31 Đội)
+      </button>
+    </nav>
+
+    <div class="header-right">
+      <div id="header-progress" class="progress-pill">Tiến độ: <b>18/31 trận</b></div>
+      <a class="btn-xs btn-amber" href="obs.html" target="_blank" style="text-decoration:none;">
+        🖥 Mở Màn Hình OBS (Giao Diện 1) ↗
+      </a>
+      <button class="btn-xs btn-outline" onclick="AdminPortal.logout()">
+        🔒 Đăng xuất
+      </button>
+    </div>
+  </header>
+
+  <div class="main-container" style="padding-bottom: 10px;">
+    <!-- THANH ĐIỀU KHIỂN TỪ XA MÀN HÌNH OBS, ĐỤC LỖ CAMERA, CHUYỂN TỪNG BẢNG XẾP HẠNG & TRANSITIONS 3 GIÂY -->
+    <div class="obs-remote-bar" style="flex-direction:column;align-items:stretch;gap:10px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+        <div class="obs-remote-group">
+          <span style="font-size:12px;font-weight:800;color:#38bdf8;">ĐIỀU KHIỂN MÀN HÌNH OBS:</span>
+          <button class="btn-xs btn-emerald" onclick="window.TCApp.setOBSView('chroma_green')" title="Đục lỗ bằng nền Xanh Lá #00FF00 dưới thanh chữ 2 đội trên đầu cho bộ lọc Chroma Key trong OBS">
+            Đục Lỗ Xanh Lá (Chroma Key + Khung Chữ)
+          </button>
+          <button class="btn-xs btn-outline" onclick="window.TCApp.setOBSView('camera')" title="Đục thủng trong suốt Alpha dưới thanh chữ 2 đội trên đầu để lộ Camera/Video">
+            Đục Lỗ Alpha (Camera + Khung Chữ)
+          </button>
+          <button class="btn-xs btn-amber" onclick="window.TCApp.setOBSView('ranking_A')">Hiện BXH Bảng A (Junior)</button>
+          <button class="btn-xs btn-amber" onclick="window.TCApp.setOBSView('ranking_B')">Hiện BXH Bảng B (Teen)</button>
+          <button class="btn-xs btn-outline" onclick="window.TCApp.toggleOBSBracketTransition()">Transitions: Đổi Bảng A ⇄ B (3s)</button>
+          <button class="btn-xs btn-outline" onclick="window.TCApp.setOBSView('result')">Hiện Kết Quả Trận</button>
+          <button class="btn-xs btn-outline" onclick="window.TCApp.toggleOBSBgMode()">
+            Bật/Tắt Nền Trong Suốt Toàn Màn
+          </button>
+        </div>
+
+        <div class="obs-remote-group">
+          <span style="font-size:12px;font-weight:800;color:#10b981;">XUẤT FILE GỬI PHỤ HUYNH:</span>
+          <button class="btn-xs btn-emerald" onclick="window.TCApp.exportExcelWorkbook()">Xuất Excel (.xls)</button>
+          <button class="btn-xs btn-emerald" onclick="window.TCApp.exportFullPDF()">Xuất PDF Toàn Giải</button>
+          <button class="btn-xs btn-amber" onclick="window.TCApp.promptParentPDF()">Xuất PDF Phiếu Điểm 1 Đội</button>
+        </div>
+      </div>
+
+      <!-- HÀNG 2: NÚT TRANSITIONS (3 GIÂY) & BẮN HIỆU ỨNG CHUYỂN CẢNH LÊN OBS -->
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding-top:8px;border-top:1px solid rgba(148,163,184,0.2);">
+        <div class="obs-remote-group" style="flex:1;min-width:300px;">
+          <span style="font-size:12px;font-weight:800;color:#fbbf24;">TRANSITIONS (3 GIÂY + SOUND EFFECT):</span>
+          <input type="text" id="admin-transition-title" class="input-text" style="max-width:240px;padding:5px 10px;font-size:12px;"
+            placeholder="Nhập chữ Transitions chính..." value="TECH CLASH: FINALE 2026" />
+          <input type="text" id="admin-transition-sub" class="input-text" style="max-width:260px;padding:5px 10px;font-size:12px;"
+            placeholder="Nhập dòng phụ Transitions..." value="MINDX THÁI NGUYÊN • VÒNG 2 ĐỒNG ĐỘI" />
+          <button class="btn-xs btn-emerald" onclick="window.TCApp.triggerOBSTransition(document.getElementById('admin-transition-title').value, document.getElementById('admin-transition-sub').value)">
+            Bắn Transitions (3s + SFX) Lên OBS
+          </button>
+          <button class="btn-xs btn-outline" onclick="window.TCApp.triggerOBSTransition('NEXT ROUND • ĐỔI ĐỘI THI ĐẤU', 'MỜI 2 ĐỘI TIẾP THEO VÀO SA BÀN')">
+            Transitions: Next Round (3s)
+          </button>
+          <button class="btn-xs btn-outline" onclick="window.TCApp.setOBSView('ranking_A')">
+            Transitions: Sang BXH Bảng A (3s)
+          </button>
+          <button class="btn-xs btn-outline" onclick="window.TCApp.setOBSView('ranking_B')">
+            Transitions: Sang BXH Bảng B (3s)
+          </button>
+          <button class="btn-xs btn-amber" onclick="window.TCApp.playTransitionSFX()">
+            Nghe Thử SFX Transitions
+          </button>
+          <button class="btn-xs btn-amber" onclick="window.TCApp.previewVexIQCountdown()">
+            Nghe Thử VEX IQ (Ten..One + Switch)
+          </button>
+          <button class="btn-xs btn-outline" id="btn-toggle-sfx" onclick="window.TCApp.toggleTransitionSound()">
+            Bật/Tắt Âm Thanh
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NỘI DUNG CHÍNH -->
+  <main id="main-view" class="main-container" style="padding-top:0;"></main>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="app.js"></script>
+  <script src="vex-sfx.js"></script>
+  <script src="ui.js"></script>
+  <script>
+    const AdminPortal = {
+      checkAuth() {
+        const logged = sessionStorage.getItem('TC2026_ADMIN_AUTH') === '1';
+        const modal = document.getElementById('login-modal');
+        if (modal) modal.style.display = logged ? 'none' : 'flex';
+      },
+      handleLogin(e) {
+        e.preventDefault();
+        const u = document.getElementById('login-user').value.trim();
+        const p = document.getElementById('login-pin').value.trim();
+        const savedPin = (window.TCApp && window.TCApp.getAdminPin && window.TCApp.getAdminPin()) || '2026';
+        if (u.toLowerCase() === 'admin' && (p === savedPin || p === '2026')) {
+          sessionStorage.setItem('TC2026_ADMIN_AUTH', '1');
+          document.getElementById('login-modal').style.display = 'none';
+          if (window.TCApp) window.TCApp.switchTab('referee');
+        } else {
+          document.getElementById('login-err').style.display = 'block';
+        }
+      },
+      logout() {
+        sessionStorage.removeItem('TC2026_ADMIN_AUTH');
+        this.checkAuth();
+      }
+    };
+    document.addEventListener('DOMContentLoaded', () => {
+      AdminPortal.checkAuth();
+      if (window.TCApp) window.TCApp.switchTab('referee');
+    });
+  </script>
+</body>
+</html>

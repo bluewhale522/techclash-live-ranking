@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: techclash-mindx-2026
+    env: node
+    plan: free
+    buildCommand: echo "No build required"
+    startCommand: node server.js
