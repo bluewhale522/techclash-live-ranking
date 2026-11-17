@@ -286,6 +286,20 @@
       flex-shrink: 0;
     }
 
+    /* Logo MindX Trắng ở góc trên bên phải */
+    .top-right-logo {
+      position: absolute;
+      right: 3.0%;
+      top: 3.2%;
+      height: 10.2%;
+      width: auto;
+      max-width: 22%;
+      object-fit: contain;
+      z-index: 20;
+      pointer-events: none;
+      filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.85));
+    }
+
     /* ============================================================================
      * KHUNG 1: KHUNG LỚN BÊN TRÁI (x: 6.3% -> 72.1%, y: 17.6% -> 83.8%)
      * ============================================================================ */
@@ -904,6 +918,9 @@
       <div class="hud-progress-pill" id="hud-progress">TIẾN ĐỘ: 0/32 TRẬN</div>
     </div>
 
+    <!-- Logo MindX Trắng ở góc trên bên phải -->
+    <img class="top-right-logo" src="logo/logo_mindx_tr%E1%BA%AFng.png" alt="MindX Logo" />
+
     <!-- 1. KHUNG LỚN BÊN TRÁI (BẢNG XẾP HẠNG LIVE TỪNG BẢNG / KẾT QUẢ TRẬN / CAMERA SA BÀN) -->
     <div class="box-main-left" id="box-main-left"></div>
 
@@ -1465,6 +1482,12 @@
         }
       }
 
+      function shortName2(fullName) {
+        const parts = String(fullName || '').trim().split(/\s+/).filter(Boolean);
+        if (parts.length <= 2) return parts.join(' ');
+        return parts.slice(-2).join(' ');
+      }
+
       function renderBracketColumn(bCode, list, curMatch) {
         const isA = bCode === 'A';
         return `
@@ -1488,8 +1511,8 @@
                 return `
                   <div class="rank-row-item ${rCls} ${isNow ? 'is-playing' : ''}">
                     <div class="r-pos">#${item.rank}</div>
-                    <div class="r-class">${item.className} <span style="font-weight:600;color:#94a3b8;font-size:0.68vw;">(${item.code})</span></div>
-                    <div class="r-stu">${item.student1} - ${item.student2}</div>
+                    <div class="r-class">${item.className} <span style="font-weight:600;color:#94a3b8;font-size:0.78vw;">(${item.code})</span></div>
+                    <div class="r-stu">${shortName2(item.student1)} - ${shortName2(item.student2)}</div>
                     <div class="r-turn">${item.turn1Score !== null ? item.turn1Score : '-'}</div>
                     <div class="r-turn">${item.turn2Score !== null ? item.turn2Score : '-'}</div>
                     <div class="r-total">${item.displayPrimary}</div>
