@@ -60,6 +60,11 @@
       transition: clip-path 0.35s ease, opacity 0.35s ease;
     }
 
+    /* Chế độ đổi nền sang bản có Logo MindX Thái Nguyên (TN) ở góc trên bên phải */
+    body.bg-tn .livestream-bg-layer {
+      background-image: url('obs-bg-tn.jpg?v=1');
+    }
+
     /* Chế độ ĐỤC LỖ KHUNG LỚN (x: 6.6% -> 71.8%, y: 18.0% -> 83.4%) */
     body.cutout-main-hole .livestream-bg-layer {
       clip-path: polygon(
@@ -279,24 +284,24 @@
     }
 
     @keyframes shardFly1 {
-      0%, 22% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
-      38% { opacity: 0.9; transform: translate(-14vw, -9vw) rotate(-38deg) scale(0.8); }
-      52%, 100% { opacity: 0; transform: translate(-20vw, -14vw) rotate(-65deg) scale(0.4); }
+      0%, 18% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
+      36% { opacity: 0.9; transform: translate(-38vw, -12vw) rotate(-140deg) scale(0.75); }
+      52%, 100% { opacity: 0; transform: translate(-55vw, -18vw) rotate(-220deg) scale(0.3); }
     }
     @keyframes shardFly2 {
-      0%, 22% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
-      38% { opacity: 0.9; transform: translate(14vw, -10vw) rotate(42deg) scale(0.8); }
-      52%, 100% { opacity: 0; transform: translate(20vw, -15vw) rotate(72deg) scale(0.4); }
+      0%, 18% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
+      36% { opacity: 0.9; transform: translate(-30vw, -18vw) rotate(-95deg) scale(0.75); }
+      52%, 100% { opacity: 0; transform: translate(-48vw, -26vw) rotate(-180deg) scale(0.3); }
     }
     @keyframes shardFly3 {
-      0%, 22% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
-      38% { opacity: 0.9; transform: translate(-15vw, 10vw) rotate(-45deg) scale(0.75); }
-      52%, 100% { opacity: 0; transform: translate(-22vw, 16vw) rotate(-80deg) scale(0.35); }
+      0%, 18% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
+      36% { opacity: 0.9; transform: translate(-42vw, 8vw) rotate(-160deg) scale(0.7); }
+      52%, 100% { opacity: 0; transform: translate(-60vw, 14vw) rotate(-260deg) scale(0.25); }
     }
     @keyframes shardFly4 {
-      0%, 22% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
-      38% { opacity: 0.9; transform: translate(15vw, 11vw) rotate(48deg) scale(0.75); }
-      52%, 100% { opacity: 0; transform: translate(22vw, 17vw) rotate(82deg) scale(0.35); }
+      0%, 18% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
+      36% { opacity: 0.9; transform: translate(-34vw, 15vw) rotate(-115deg) scale(0.7); }
+      52%, 100% { opacity: 0; transform: translate(-52vw, 22vw) rotate(-195deg) scale(0.25); }
     }
 
     /* Vòng sóng xung kích & lóe sáng lúc va chạm */
@@ -357,12 +362,12 @@
     }
 
     @keyframes tnSmashDownRise {
-      0%, 10% { opacity: 0; transform: translateY(-34vh) scale(2.1); }
-      21% { opacity: 1; transform: translateY(0.8vw) scale(0.95); }
-      26% { opacity: 1; transform: translateY(-0.6vw) scale(1.06); }
-      34% { opacity: 1; transform: translateY(0) scale(1.02); }
-      82% { opacity: 1; transform: translateY(0) scale(1.08); }
-      100% { opacity: 0; transform: translateY(0) scale(1.15); }
+      0% { opacity: 0; transform: translate(-28vw, 18vh) scale(1.7) rotate(-14deg); }
+      18% { opacity: 1; transform: translate(0, 0) scale(1.12) rotate(0deg); }
+      32% { opacity: 1; transform: translate(0, 0) scale(1.02); }
+      68% { opacity: 1; transform: translate(0, 0) scale(1.06); }
+      88% { opacity: 1; transform: translate(35.2vw, -40.5vh) scale(0.46) rotate(0deg); }
+      100% { opacity: 0; transform: translate(35.2vw, -40.5vh) scale(0.46); }
     }
 
     .tn-crown {
@@ -1416,6 +1421,12 @@
           document.body.classList.add('transparent-mode');
         } else {
           document.body.classList.remove('transparent-mode');
+        }
+
+        if (state.config.obsBgVariant === 'tn') {
+          document.body.classList.add('bg-tn');
+        } else {
+          document.body.classList.remove('bg-tn');
         }
 
         // Bật chế độ ĐỤC LỖ TRONG SUỐT 100% (Alpha Cutout) ngay trong lòng Khung Chính khi chọn Đục lỗ Camera / Video / Chroma Key

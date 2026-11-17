@@ -228,6 +228,9 @@
           <button class="btn-xs btn-amber" onclick="window.TCApp.setOBSView('ranking_B')">Hiện BXH Bảng B (Teen)</button>
           <button class="btn-xs btn-outline" onclick="window.TCApp.toggleOBSBracketTransition()">Transitions: Đổi Bảng A ⇄ B (1.5s)</button>
           <button class="btn-xs btn-outline" onclick="window.TCApp.setOBSView('result')">Hiện Kết Quả Trận</button>
+          <button class="btn-xs btn-outline" onclick="window.TCApp.toggleOBSBackdropVariant()" title="Chuyển đổi qua lại giữa ảnh nền MindX Gốc và ảnh nền MindX Thái Nguyên (TN)">
+            🖼 Switch Backdrop (MindX Gốc ⇄ TN)
+          </button>
           <button class="btn-xs btn-outline" onclick="window.TCApp.toggleOBSBgMode()">
             Bật/Tắt Nền Trong Suốt Toàn Màn
           </button>
@@ -253,8 +256,8 @@
           <button class="btn-xs btn-emerald" onclick="window.TCApp.triggerOBSTransition(document.getElementById('admin-transition-title').value, document.getElementById('admin-transition-sub').value)">
             Bắn Transitions (1.5s + SFX) Lên OBS
           </button>
-          <button class="btn-xs btn-amber" onclick="window.TCApp.triggerTNSmashTransition()">
-            👑 Transitions: Logo TN Đập Vỡ MindX Lên Ngôi
+          <button class="btn-xs btn-amber" onclick="window.TCApp.triggerTNSmashTransition()" title="Nút For Fun: Chạy hiệu ứng logo TN đá bay logo MindX sang góc trái và đổi nền sang logo TN">
+            👑 Transitions: Đá Bay MindX ➔ Lên Logo TN (Fun)
           </button>
           <button class="btn-xs btn-outline" onclick="window.TCApp.triggerOBSTransition('NEXT ROUND • ĐỔI ĐỘI THI ĐẤU', 'MỜI 2 ĐỘI TIẾP THEO VÀO SA BÀN')">
             Transitions: Next Round (1.5s)

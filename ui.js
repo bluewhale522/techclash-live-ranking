@@ -2393,8 +2393,18 @@
       showToast(
         state.config.obsBgMode === 'transparent'
           ? 'Đã bật chế độ Nền Trong Suốt Toàn Màn trên OBS!'
-          : 'Đã bật lại ảnh nền MindX Lửa & Băng trên OBS!',
+          : 'Đã bật lại ảnh nền trên OBS!',
         'info'
+      );
+    },
+    toggleOBSBackdropVariant() {
+      state.config.obsBgVariant = state.config.obsBgVariant === 'tn' ? 'default' : 'tn';
+      saveState(true, false);
+      showToast(
+        state.config.obsBgVariant === 'tn'
+          ? '🖼 Đã đổi Backdrop sang nền Logo MindX Thái Nguyên (TN)!'
+          : '🖼 Đã khôi phục Backdrop về nền MindX Gốc ban đầu!',
+        'success'
       );
     },
     triggerOBSTransition(title, subtitle) {
@@ -2414,10 +2424,11 @@
       showToast('Đã bắn hiệu ứng Transitions (1.5s + Sound Effect): ' + tVal, 'success');
     },
     triggerTNSmashTransition() {
+      state.config.obsBgVariant = 'tn';
       state.config.transitionTrigger = {
         id: Date.now(),
         mode: 'tn_smash',
-        title: 'MINDX THÁI NGUYÊN • LÊN NGÔI VÔ ĐỊCH',
+        title: 'MINDX THÁI NGUYÊN • LÊN NGÔI',
         subtitle: 'TECHCLASH 2026'
       };
       saveState(true, false);
@@ -2427,7 +2438,7 @@
           setTimeout(() => { window.VexIQSound.playStart(); }, 480);
         }
       }
-      showToast('👑 Đã bắn Transitions: Logo Thái Nguyên đập vỡ Logo MindX lên ngôi!', 'success');
+      showToast('👑 Đã chạy Transitions đá bay MindX sang trái & đổi Backdrop sang Logo TN! (Bấm Switch Backdrop để về nền gốc)', 'success');
     },
     toggleTransitionSound() {
       state.config.transitionSound = state.config.transitionSound === false ? true : false;
