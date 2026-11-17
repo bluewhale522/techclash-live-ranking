@@ -2411,7 +2411,23 @@
       if (state.config.transitionSound !== false) {
         this.playTransitionSFX();
       }
-      showToast('Đã bắn hiệu ứng Transitions (3s + Sound Effect): ' + tVal, 'success');
+      showToast('Đã bắn hiệu ứng Transitions (1.5s + Sound Effect): ' + tVal, 'success');
+    },
+    triggerTNSmashTransition() {
+      state.config.transitionTrigger = {
+        id: Date.now(),
+        mode: 'tn_smash',
+        title: 'MINDX THÁI NGUYÊN • LÊN NGÔI VÔ ĐỊCH',
+        subtitle: 'TECHCLASH 2026'
+      };
+      saveState(true, false);
+      if (state.config.transitionSound !== false) {
+        this.playTransitionSFX();
+        if (window.VexIQSound) {
+          setTimeout(() => { window.VexIQSound.playStart(); }, 480);
+        }
+      }
+      showToast('👑 Đã bắn Transitions: Logo Thái Nguyên đập vỡ Logo MindX lên ngôi!', 'success');
     },
     toggleTransitionSound() {
       state.config.transitionSound = state.config.transitionSound === false ? true : false;

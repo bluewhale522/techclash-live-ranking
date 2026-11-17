@@ -206,6 +206,210 @@
       100% { transform: scale(1.12); opacity: 0; }
     }
 
+    /* ============================================================================
+     * HIỆU ỨNG TRANSITIONS ĐẶC BIỆT: LOGO_TN ĐẬP VỠ LOGO MINDX LÊN NGÔI (2.4s)
+     * ============================================================================ */
+    .tn-smash-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 9500;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, rgba(15, 23, 42, 0.96) 0%, rgba(3, 6, 14, 0.98) 100%);
+      opacity: 0;
+      visibility: hidden;
+      overflow: hidden;
+    }
+
+    .tn-smash-overlay.active {
+      visibility: visible;
+      animation: tnSmashMaster 2.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes tnSmashMaster {
+      0% { opacity: 0; }
+      6% { opacity: 1; }
+      84% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(1.04); visibility: hidden; }
+    }
+
+    .tn-smash-stage {
+      position: relative;
+      width: 34vw;
+      height: 22vw;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Logo MindX gốc đứng chờ ở tâm, sau đó vỡ tung thành 6 mảnh khi bị đập */
+    .mindx-victim-wrap {
+      position: absolute;
+      width: 24vw;
+      height: 10.2vw;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mindx-shard {
+      position: absolute;
+      inset: 0;
+      background: url('logo/logo_mindx_trang_clean.png') center / contain no-repeat;
+      opacity: 0;
+    }
+
+    .tn-smash-overlay.active .mindx-shard.s1 {
+      clip-path: polygon(0 0, 52% 0, 44% 52%, 0 48%);
+      animation: shardFly1 2.4s ease-out forwards;
+    }
+    .tn-smash-overlay.active .mindx-shard.s2 {
+      clip-path: polygon(52% 0, 100% 0, 100% 48%, 44% 52%);
+      animation: shardFly2 2.4s ease-out forwards;
+    }
+    .tn-smash-overlay.active .mindx-shard.s3 {
+      clip-path: polygon(0 48%, 44% 52%, 35% 100%, 0 100%);
+      animation: shardFly3 2.4s ease-out forwards;
+    }
+    .tn-smash-overlay.active .mindx-shard.s4 {
+      clip-path: polygon(44% 52%, 100% 48%, 100% 100%, 35% 100%);
+      animation: shardFly4 2.4s ease-out forwards;
+    }
+
+    @keyframes shardFly1 {
+      0%, 22% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
+      38% { opacity: 0.9; transform: translate(-14vw, -9vw) rotate(-38deg) scale(0.8); }
+      52%, 100% { opacity: 0; transform: translate(-20vw, -14vw) rotate(-65deg) scale(0.4); }
+    }
+    @keyframes shardFly2 {
+      0%, 22% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
+      38% { opacity: 0.9; transform: translate(14vw, -10vw) rotate(42deg) scale(0.8); }
+      52%, 100% { opacity: 0; transform: translate(20vw, -15vw) rotate(72deg) scale(0.4); }
+    }
+    @keyframes shardFly3 {
+      0%, 22% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
+      38% { opacity: 0.9; transform: translate(-15vw, 10vw) rotate(-45deg) scale(0.75); }
+      52%, 100% { opacity: 0; transform: translate(-22vw, 16vw) rotate(-80deg) scale(0.35); }
+    }
+    @keyframes shardFly4 {
+      0%, 22% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
+      38% { opacity: 0.9; transform: translate(15vw, 11vw) rotate(48deg) scale(0.75); }
+      52%, 100% { opacity: 0; transform: translate(22vw, 17vw) rotate(82deg) scale(0.35); }
+    }
+
+    /* Vòng sóng xung kích & lóe sáng lúc va chạm */
+    .tn-impact-ring {
+      position: absolute;
+      width: 8vw;
+      height: 8vw;
+      border-radius: 50%;
+      border: 0.45vw solid #fbbf24;
+      box-shadow: 0 0 40px #fbbf24, inset 0 0 25px #ef4444;
+      opacity: 0;
+    }
+
+    .tn-smash-overlay.active .tn-impact-ring {
+      animation: impactWave 2.4s ease-out forwards;
+    }
+
+    @keyframes impactWave {
+      0%, 20% { opacity: 0; transform: scale(0.2); }
+      22% { opacity: 1; transform: scale(0.6); }
+      45% { opacity: 0; transform: scale(5.2); }
+      100% { opacity: 0; }
+    }
+
+    /* Hào quang vàng hoàng gia phía sau logo_TN khi lên ngôi */
+    .tn-royal-aura {
+      position: absolute;
+      width: 30vw;
+      height: 30vw;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(251, 191, 36, 0.55) 0%, rgba(245, 158, 11, 0.18) 45%, transparent 72%);
+      opacity: 0;
+    }
+
+    .tn-smash-overlay.active .tn-royal-aura {
+      animation: royalAuraIn 2.4s ease-out forwards;
+    }
+
+    @keyframes royalAuraIn {
+      0%, 22% { opacity: 0; transform: scale(0.4); }
+      35% { opacity: 1; transform: scale(1.15); }
+      82% { opacity: 0.95; transform: scale(1.05); }
+      100% { opacity: 0; transform: scale(1.2); }
+    }
+
+    /* Logo TN giáng xuống đập vỡ MindX rồi tỏa sáng lên ngôi */
+    .tn-victor-card {
+      position: relative;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      opacity: 0;
+    }
+
+    .tn-smash-overlay.active .tn-victor-card {
+      animation: tnSmashDownRise 2.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes tnSmashDownRise {
+      0%, 10% { opacity: 0; transform: translateY(-34vh) scale(2.1); }
+      21% { opacity: 1; transform: translateY(0.8vw) scale(0.95); }
+      26% { opacity: 1; transform: translateY(-0.6vw) scale(1.06); }
+      34% { opacity: 1; transform: translateY(0) scale(1.02); }
+      82% { opacity: 1; transform: translateY(0) scale(1.08); }
+      100% { opacity: 0; transform: translateY(0) scale(1.15); }
+    }
+
+    .tn-crown {
+      font-size: 4.2vw;
+      line-height: 1;
+      margin-bottom: -0.5vw;
+      filter: drop-shadow(0 0 18px rgba(251, 191, 36, 0.95));
+      opacity: 0;
+    }
+
+    .tn-smash-overlay.active .tn-crown {
+      animation: crownDrop 2.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes crownDrop {
+      0%, 26% { opacity: 0; transform: translateY(-5vw) scale(1.6) rotate(-12deg); }
+      38% { opacity: 1; transform: translateY(0) scale(1.1) rotate(0deg); }
+      82% { opacity: 1; transform: translateY(0) scale(1.05); }
+      100% { opacity: 0; }
+    }
+
+    .tn-logo-frame {
+      background: #ffffff;
+      padding: 1.1vw 1.8vw;
+      border-radius: 1.1vw;
+      border: 3px solid #fbbf24;
+      box-shadow: 0 0 45px rgba(251, 191, 36, 0.85), 0 14px 40px rgba(0, 0, 0, 0.85);
+    }
+
+    .tn-logo-frame img {
+      width: 21vw;
+      height: auto;
+      display: block;
+    }
+
+    .tn-victor-caption {
+      margin-top: 0.9vw;
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 1.45vw;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #fde68a;
+      text-shadow: 0 0 22px rgba(251, 191, 36, 0.95), 0 3px 10px rgba(0, 0, 0, 0.95);
+      white-space: nowrap;
+    }
+
     /* Tiêu đề Esports 2 dòng gọn gàng ở khoảng trống phía trên Khung Lớn */
     .stream-top-hud {
       position: absolute;
@@ -895,6 +1099,27 @@
       </div>
     </div>
 
+    <!-- Hiệu ứng Transitions Đặc Biệt: Logo TN Đập Vỡ Logo MindX Lên Ngôi -->
+    <div class="tn-smash-overlay" id="tn-smash-overlay">
+      <div class="tn-royal-aura"></div>
+      <div class="tn-impact-ring"></div>
+      <div class="tn-smash-stage">
+        <div class="mindx-victim-wrap">
+          <div class="mindx-shard s1"></div>
+          <div class="mindx-shard s2"></div>
+          <div class="mindx-shard s3"></div>
+          <div class="mindx-shard s4"></div>
+        </div>
+        <div class="tn-victor-card">
+          <div class="tn-crown">👑</div>
+          <div class="tn-logo-frame">
+            <img src="logo/logo_TN_clean.png" alt="MindX Thái Nguyên" />
+          </div>
+          <div class="tn-victor-caption" id="tn-smash-caption">MINDX THÁI NGUYÊN • LÊN NGÔI VÔ ĐỊCH</div>
+        </div>
+      </div>
+    </div>
+
     <!-- Tiêu đề HUD trên đỉnh: Dòng 1 TECHCLASH 2026, Dòng 2 ĐỎ vs XANH & Tiến độ -->
     <div class="stream-top-hud">
       <div class="hud-title-block">
@@ -1139,7 +1364,22 @@
         }, { once: true });
       });
 
-      function triggerStingerOverlay(titleText, subText) {
+      function triggerStingerOverlay(titleText, subText, mode) {
+        if (mode === 'tn_smash') {
+          const tnOv = document.getElementById('tn-smash-overlay');
+          const cap = document.getElementById('tn-smash-caption');
+          if (tnOv) {
+            if (cap) cap.textContent = titleText || 'MINDX THÁI NGUYÊN • LÊN NGÔI VÔ ĐỊCH';
+            tnOv.classList.remove('active');
+            void tnOv.offsetWidth;
+            tnOv.classList.add('active');
+            playTransitionSoundEffect();
+            if (window.VexIQSound) {
+              setTimeout(() => { window.VexIQSound.playStart(); }, 480);
+            }
+          }
+          return;
+        }
         const ov = document.getElementById('stinger-overlay');
         const tEl = document.getElementById('stinger-title');
         const sEl = document.getElementById('stinger-sub');
@@ -1156,10 +1396,10 @@
         const viewMode = state.config.obsMainView || 'ranking_A';
         const trig = state.config.transitionTrigger;
 
-        // Phát hiệu ứng Transitions (3 giây) khi Admin bấm nút Transition hoặc đổi cảnh trên Admin
+        // Phát hiệu ứng Transitions (1.5s hoặc TN Smash) khi Admin bấm nút Transition hoặc đổi cảnh trên Admin
         if (trig && trig.id && trig.id !== lastTransitionId) {
           lastTransitionId = trig.id;
-          triggerStingerOverlay(trig.title, trig.subtitle);
+          triggerStingerOverlay(trig.title, trig.subtitle, trig.mode);
         } else if (viewMode !== lastObsView) {
           lastObsView = viewMode;
           const autoTitle = viewMode === 'result'
