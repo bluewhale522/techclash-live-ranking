@@ -461,6 +461,8 @@
     showToast('🔓 Đã kết thúc đếm ngược & mở khóa điền điểm cho Trọng tài!', 'info');
   }
 
+  let autoNextAfterResultTimer = null;
+
   function publishScoreToOBSScreen(matchId) {
     const idx = state.matches.findIndex(x => x.id === matchId);
     if (idx === -1) return;
@@ -481,10 +483,20 @@
     state.config.obsMainView = 'result';
 
     saveState(true, true);
-    showToast('🚀 ĐÃ CHỐT & HIỂN THỊ ĐIỂM TRẬN #' + m.matchNumber + ' LÊN MÀN HÌNH OBS!', 'success');
+    showToast('🚀 ĐÃ CHỐT & HIỂN THỊ ĐIỂM TRẬN #' + m.matchNumber + ' (Tự động chuyển sang trận tiếp theo sau 5 giây...)', 'success');
+
+    if (autoNextAfterResultTimer) clearTimeout(autoNextAfterResultTimer);
+    autoNextAfterResultTimer = setTimeout(() => {
+      autoNextAfterResultTimer = null;
+      advanceToNextRoundOnArena(matchId);
+    }, 5000);
   }
 
   function advanceToNextRoundOnArena(matchId) {
+    if (autoNextAfterResultTimer) {
+      clearTimeout(autoNextAfterResultTimer);
+      autoNextAfterResultTimer = null;
+    }
     const idx = state.matches.findIndex(x => x.id === matchId);
     if (idx !== -1 && state.matches[idx].status === 'live') {
       // Nếu chưa bấm chốt thì tự chốt trước khi qua trận
