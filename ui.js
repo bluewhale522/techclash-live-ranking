@@ -1798,6 +1798,9 @@
             <button class="btn btn-outline" onclick="window.TCApp.setMatchLiveOnArena('${match.id}')">
               📡 Đưa trận này lên Khung Đếm Ngược OBS
             </button>
+            <button class="btn btn-amber" onclick="window.TCApp.swapMatchSides('${match.id}')" title="Đổi phần sân Đỏ (Trái) ⇄ Xanh (Phải) của trận này">
+              🔄 Đổi Sân Đỏ ⇄ Xanh
+            </button>
             ${nextMatch ? `
               <span style="font-size:12px;color:#93c5fd;align-self:center;">
                 ⏭ <b>Next Round (Khung dưới OBS):</b> Trận #${nextMatch.matchNumber} (Bảng ${nextMatch.bracket}) — ${nextRed.className} vs ${nextBlue.className}
@@ -1989,6 +1992,9 @@
                       </button>
                       <button class="btn-xs btn-emerald" onclick="window.TCApp.selectMatchForScoring('${m.id}', true)">
                         ✏️ Điền điểm
+                      </button>
+                      <button class="btn-xs btn-outline" onclick="window.TCApp.swapMatchSides('${m.id}')" title="Đổi phần sân Đỏ ⇄ Xanh của trận này">
+                        🔄 Đổi Sân
                       </button>
                       <button class="btn-xs btn-outline" onclick="window.TCApp.clearSingleMatchScore('${m.id}')" title="Xóa điểm trận này về Chưa thi (0-0)">
                         🧹 Reset trận
@@ -2491,6 +2497,18 @@
       m.completedAt = null;
       saveState(true, true);
       showToast('Đã xóa điểm Trận #' + m.matchNumber + ' về Chưa thi (0 - 0)!', 'info');
+    },
+    swapMatchSides(matchId) {
+      const m = state.matches.find(x => x.id === matchId);
+      if (!m) return;
+      const tmpId = m.redTeamId; m.redTeamId = m.blueTeamId; m.blueTeamId = tmpId;
+      const tmpTurn = m.redTurn; m.redTurn = m.blueTurn; m.blueTurn = tmpTurn;
+      const tmpSheet = m.redSheet; m.redSheet = m.blueSheet; m.blueSheet = tmpSheet;
+      const tmpScore = m.redScore; m.redScore = m.blueScore; m.blueScore = tmpScore;
+      saveState(true, true);
+      const rT = getTeamById(m.redTeamId);
+      const bT = getTeamById(m.blueTeamId);
+      showToast('Đã đổi phần sân Trận #' + m.matchNumber + ': ĐỎ (' + rT.className + ') ⇄ XANH (' + bT.className + ')!', 'success');
     },
     moveMatchOrder(matchId, delta) {
       const idx = state.matches.findIndex(x => x.id === matchId);

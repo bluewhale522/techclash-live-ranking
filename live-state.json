@@ -943,48 +943,6 @@
       "id": "M13",
       "matchNumber": 13,
       "wave": 1,
-      "bracket": "A",
-      "redTeamId": "A13",
-      "redTurn": 1,
-      "blueTeamId": "A01",
-      "blueTurn": 2,
-      "status": "pending",
-      "redSheet": {
-        "big": 0,
-        "med": 0,
-        "small": 0,
-        "stackBig": 0,
-        "stackMed": 0,
-        "stackSmall": 0,
-        "special": 0,
-        "parked": 0,
-        "noTabletSwap": 0,
-        "otherFouls": 0,
-        "forceSpecial": false,
-        "manualOverride": null
-      },
-      "blueSheet": {
-        "big": 0,
-        "med": 0,
-        "small": 0,
-        "stackBig": 0,
-        "stackMed": 0,
-        "stackSmall": 0,
-        "special": 0,
-        "parked": 0,
-        "noTabletSwap": 0,
-        "otherFouls": 0,
-        "forceSpecial": false,
-        "manualOverride": null
-      },
-      "redScore": null,
-      "blueScore": null,
-      "completedAt": null
-    },
-    {
-      "id": "M14",
-      "matchNumber": 14,
-      "wave": 1,
       "bracket": "B",
       "redTeamId": "B13",
       "redTurn": 1,
@@ -1024,8 +982,8 @@
       "completedAt": null
     },
     {
-      "id": "M15",
-      "matchNumber": 15,
+      "id": "M14",
+      "matchNumber": 14,
       "wave": 1,
       "bracket": "B",
       "redTeamId": "B15",
@@ -1066,8 +1024,8 @@
       "completedAt": null
     },
     {
-      "id": "M16",
-      "matchNumber": 16,
+      "id": "M15",
+      "matchNumber": 15,
       "wave": 1,
       "bracket": "B",
       "redTeamId": "B17",
@@ -1108,50 +1066,8 @@
       "completedAt": null
     },
     {
-      "id": "M17",
-      "matchNumber": 17,
-      "wave": 1,
-      "bracket": "B",
-      "redTeamId": "B19",
-      "redTurn": 1,
-      "blueTeamId": "B01",
-      "blueTurn": 2,
-      "status": "pending",
-      "redSheet": {
-        "big": 0,
-        "med": 0,
-        "small": 0,
-        "stackBig": 0,
-        "stackMed": 0,
-        "stackSmall": 0,
-        "special": 0,
-        "parked": 0,
-        "noTabletSwap": 0,
-        "otherFouls": 0,
-        "forceSpecial": false,
-        "manualOverride": null
-      },
-      "blueSheet": {
-        "big": 0,
-        "med": 0,
-        "small": 0,
-        "stackBig": 0,
-        "stackMed": 0,
-        "stackSmall": 0,
-        "special": 0,
-        "parked": 0,
-        "noTabletSwap": 0,
-        "otherFouls": 0,
-        "forceSpecial": false,
-        "manualOverride": null
-      },
-      "redScore": null,
-      "blueScore": null,
-      "completedAt": null
-    },
-    {
-      "id": "M18",
-      "matchNumber": 18,
+      "id": "M16",
+      "matchNumber": 16,
       "wave": 2,
       "bracket": "A",
       "redTeamId": "A02",
@@ -1192,8 +1108,8 @@
       "completedAt": null
     },
     {
-      "id": "M19",
-      "matchNumber": 19,
+      "id": "M17",
+      "matchNumber": 17,
       "wave": 2,
       "bracket": "B",
       "redTeamId": "B02",
@@ -1234,8 +1150,8 @@
       "completedAt": null
     },
     {
-      "id": "M20",
-      "matchNumber": 20,
+      "id": "M18",
+      "matchNumber": 18,
       "wave": 2,
       "bracket": "A",
       "redTeamId": "A04",
@@ -1276,8 +1192,8 @@
       "completedAt": null
     },
     {
-      "id": "M21",
-      "matchNumber": 21,
+      "id": "M19",
+      "matchNumber": 19,
       "wave": 2,
       "bracket": "B",
       "redTeamId": "B04",
@@ -1318,8 +1234,8 @@
       "completedAt": null
     },
     {
-      "id": "M22",
-      "matchNumber": 22,
+      "id": "M20",
+      "matchNumber": 20,
       "wave": 2,
       "bracket": "A",
       "redTeamId": "A06",
@@ -1360,8 +1276,8 @@
       "completedAt": null
     },
     {
-      "id": "M23",
-      "matchNumber": 23,
+      "id": "M21",
+      "matchNumber": 21,
       "wave": 2,
       "bracket": "B",
       "redTeamId": "B06",
@@ -1402,8 +1318,8 @@
       "completedAt": null
     },
     {
-      "id": "M24",
-      "matchNumber": 24,
+      "id": "M22",
+      "matchNumber": 22,
       "wave": 2,
       "bracket": "A",
       "redTeamId": "A08",
@@ -1444,8 +1360,8 @@
       "completedAt": null
     },
     {
-      "id": "M25",
-      "matchNumber": 25,
+      "id": "M23",
+      "matchNumber": 23,
       "wave": 2,
       "bracket": "B",
       "redTeamId": "B08",
@@ -1486,8 +1402,8 @@
       "completedAt": null
     },
     {
-      "id": "M26",
-      "matchNumber": 26,
+      "id": "M24",
+      "matchNumber": 24,
       "wave": 2,
       "bracket": "A",
       "redTeamId": "A10",
@@ -1528,8 +1444,8 @@
       "completedAt": null
     },
     {
-      "id": "M27",
-      "matchNumber": 27,
+      "id": "M25",
+      "matchNumber": 25,
       "wave": 2,
       "bracket": "B",
       "redTeamId": "B10",
@@ -1570,14 +1486,14 @@
       "completedAt": null
     },
     {
-      "id": "M28",
-      "matchNumber": 28,
+      "id": "M26",
+      "matchNumber": 26,
       "wave": 2,
       "bracket": "A",
       "redTeamId": "A12",
       "redTurn": 2,
       "blueTeamId": "A13",
-      "blueTurn": 2,
+      "blueTurn": 1,
       "status": "pending",
       "redSheet": {
         "big": 0,
@@ -1612,8 +1528,8 @@
       "completedAt": null
     },
     {
-      "id": "M29",
-      "matchNumber": 29,
+      "id": "M27",
+      "matchNumber": 27,
       "wave": 2,
       "bracket": "B",
       "redTeamId": "B12",
@@ -1654,8 +1570,50 @@
       "completedAt": null
     },
     {
-      "id": "M30",
-      "matchNumber": 30,
+      "id": "M28",
+      "matchNumber": 28,
+      "wave": 2,
+      "bracket": "A",
+      "redTeamId": "A13",
+      "redTurn": 2,
+      "blueTeamId": "A01",
+      "blueTurn": 2,
+      "status": "pending",
+      "redSheet": {
+        "big": 0,
+        "med": 0,
+        "small": 0,
+        "stackBig": 0,
+        "stackMed": 0,
+        "stackSmall": 0,
+        "special": 0,
+        "parked": 0,
+        "noTabletSwap": 0,
+        "otherFouls": 0,
+        "forceSpecial": false,
+        "manualOverride": null
+      },
+      "blueSheet": {
+        "big": 0,
+        "med": 0,
+        "small": 0,
+        "stackBig": 0,
+        "stackMed": 0,
+        "stackSmall": 0,
+        "special": 0,
+        "parked": 0,
+        "noTabletSwap": 0,
+        "otherFouls": 0,
+        "forceSpecial": false,
+        "manualOverride": null
+      },
+      "redScore": null,
+      "blueScore": null,
+      "completedAt": null
+    },
+    {
+      "id": "M29",
+      "matchNumber": 29,
       "wave": 2,
       "bracket": "B",
       "redTeamId": "B14",
@@ -1696,8 +1654,8 @@
       "completedAt": null
     },
     {
-      "id": "M31",
-      "matchNumber": 31,
+      "id": "M30",
+      "matchNumber": 30,
       "wave": 2,
       "bracket": "B",
       "redTeamId": "B16",
@@ -1738,13 +1696,55 @@
       "completedAt": null
     },
     {
-      "id": "M32",
-      "matchNumber": 32,
+      "id": "M31",
+      "matchNumber": 31,
       "wave": 2,
       "bracket": "B",
       "redTeamId": "B18",
       "redTurn": 2,
       "blueTeamId": "B19",
+      "blueTurn": 1,
+      "status": "pending",
+      "redSheet": {
+        "big": 0,
+        "med": 0,
+        "small": 0,
+        "stackBig": 0,
+        "stackMed": 0,
+        "stackSmall": 0,
+        "special": 0,
+        "parked": 0,
+        "noTabletSwap": 0,
+        "otherFouls": 0,
+        "forceSpecial": false,
+        "manualOverride": null
+      },
+      "blueSheet": {
+        "big": 0,
+        "med": 0,
+        "small": 0,
+        "stackBig": 0,
+        "stackMed": 0,
+        "stackSmall": 0,
+        "special": 0,
+        "parked": 0,
+        "noTabletSwap": 0,
+        "otherFouls": 0,
+        "forceSpecial": false,
+        "manualOverride": null
+      },
+      "redScore": null,
+      "blueScore": null,
+      "completedAt": null
+    },
+    {
+      "id": "M32",
+      "matchNumber": 32,
+      "wave": 2,
+      "bracket": "B",
+      "redTeamId": "B19",
+      "redTurn": 2,
+      "blueTeamId": "B01",
       "blueTurn": 2,
       "status": "pending",
       "redSheet": {
@@ -1780,5 +1780,5 @@
       "completedAt": null
     }
   ],
-  "lastUpdated": "2026-11-17T15:26:54.964Z"
+  "lastUpdated": "2026-11-17T15:43:07.388Z"
 }

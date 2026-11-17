@@ -274,8 +274,13 @@ function generateInterleavedSchedule(teams, shuffleRandom = true) {
     const evenIndices = [];
     const oddIndices = [];
     for (let k = 0; k < n; k++) {
-      if (k % 2 === 0) evenIndices.push(k);
-      else oddIndices.push(k);
+      // Nếu n lẻ, cạnh cuối k = n - 1 là (T_{n-1} [Đỏ], T_0 [Xanh]) phải đưa sang Lượt 2 (oddIndices)
+      // để T_0 thi Lượt 1 ở Sân Đỏ (cạnh 0) và sang Lượt 2 tự động ĐỔI SÂN sang Sân Xanh (cạnh n-1)
+      if (k % 2 === 0 && !(n % 2 === 1 && k === n - 1)) {
+        evenIndices.push(k);
+      } else {
+        oddIndices.push(k);
+      }
     }
 
     // Nếu n lẻ, cạnh cuối của evenIndices là e_{n-1} = (T_{n-1}, T_0) có chứa T_0 (vốn đã thi ở e_0).

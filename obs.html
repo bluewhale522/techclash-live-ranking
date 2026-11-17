@@ -324,6 +324,8 @@
       display: flex;
       flex-direction: column;
       gap: 0.12vw;
+      min-width: 0;
+      overflow: hidden;
     }
 
     .strip-team.blue {
@@ -336,6 +338,9 @@
       font-weight: 800;
       letter-spacing: 0.06em;
       text-transform: uppercase;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .strip-side-label.red { color: #fca5a5; }
@@ -343,16 +348,24 @@
 
     .strip-team-name {
       font-family: 'Chakra Petch', sans-serif;
-      font-size: 1.2vw;
+      font-size: 1.15vw;
       font-weight: 800;
       color: #ffffff;
       line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
     }
 
     .strip-team-stu {
       font-size: 0.74vw;
       font-weight: 600;
       color: #e2e8f0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
     }
 
     .strip-vs-center {
@@ -365,6 +378,7 @@
       border: 1px solid rgba(251, 191, 36, 0.55);
       border-radius: 0.45vw;
       min-width: 9.2vw;
+      flex-shrink: 0;
     }
 
     .strip-vs-top {
@@ -373,6 +387,7 @@
       color: var(--gold);
       letter-spacing: 0.07em;
       text-transform: uppercase;
+      white-space: nowrap;
     }
 
     .strip-vs-main {
@@ -381,6 +396,7 @@
       font-weight: 900;
       color: #ffffff;
       line-height: 1.1;
+      white-space: nowrap;
     }
 
     /* Lưới 2 Bảng Xếp Hạng (Bảng A bên Lửa Đỏ/Cam - Bảng B bên Băng Xanh) */
@@ -582,16 +598,19 @@
 
     .timer-match-badge {
       width: 100%;
-      padding: 0.28vw 0.6vw;
+      padding: 0.28vw 0.5vw;
       border-radius: 0.35vw;
       background: rgba(8, 47, 73, 0.75);
       border: 1px solid rgba(103, 232, 249, 0.45);
       font-family: 'Chakra Petch', sans-serif;
-      font-size: 0.76vw;
+      font-size: 0.74vw;
       font-weight: 800;
       color: #67e8f9;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.05em;
       text-transform: uppercase;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .timer-big-clock {
@@ -602,6 +621,7 @@
       color: #ffffff;
       letter-spacing: 0.03em;
       text-shadow: 0 0 28px rgba(56, 189, 248, 0.85), 0 4px 14px rgba(0, 0, 0, 0.9);
+      white-space: nowrap;
     }
 
     .timer-big-clock.swap-warning {
@@ -622,14 +642,17 @@
 
     .timer-status-bar {
       width: 100%;
-      padding: 0.38vw 0.55vw;
+      padding: 0.38vw 0.4vw;
       border-radius: 0.4vw;
-      font-size: 0.72vw;
+      font-size: 0.6vw;
       font-weight: 800;
       background: rgba(15, 23, 42, 0.88);
       border: 1px solid rgba(148, 163, 184, 0.3);
       color: #f1f5f9;
       line-height: 1.25;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .timer-status-bar.swap-warning {
@@ -653,7 +676,7 @@
       top: 53.3%;
       width: 21.9%;
       height: 30.5%;
-      padding: 0.75vw 0.9vw;
+      padding: 0.7vw 0.85vw;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -666,28 +689,35 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 0.4vw;
       border-bottom: 1px solid rgba(103, 232, 249, 0.35);
       padding-bottom: 0.3vw;
+      white-space: nowrap;
     }
 
     .next-title {
       font-family: 'Chakra Petch', sans-serif;
-      font-size: 0.84vw;
+      font-size: 0.74vw;
       font-weight: 900;
       color: var(--gold);
-      letter-spacing: 0.06em;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .next-bracket-pill {
       font-family: 'Chakra Petch', sans-serif;
-      font-size: 0.7vw;
+      font-size: 0.65vw;
       font-weight: 800;
-      padding: 0.14vw 0.5vw;
+      padding: 0.14vw 0.45vw;
       border-radius: 0.3vw;
       background: rgba(56, 189, 248, 0.22);
       color: #7dd3fc;
       border: 1px solid rgba(56, 189, 248, 0.45);
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .next-vs-cards {
@@ -702,6 +732,8 @@
       display: flex;
       flex-direction: column;
       gap: 0.1vw;
+      min-width: 0;
+      overflow: hidden;
     }
 
     .next-card-side.red {
@@ -718,10 +750,13 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 0.3vw;
       font-family: 'Chakra Petch', sans-serif;
-      font-size: 0.9vw;
+      font-size: 0.8vw;
       font-weight: 800;
       color: #ffffff;
+      white-space: nowrap;
+      min-width: 0;
     }
 
     .next-card-stu {
@@ -734,11 +769,11 @@
     }
 
     .next-ondeck-bar {
-      font-size: 0.65vw;
+      font-size: 0.58vw;
       color: #cbd5e1;
       background: rgba(9, 14, 26, 0.82);
       border: 1px solid rgba(148, 163, 184, 0.22);
-      padding: 0.28vw 0.55vw;
+      padding: 0.28vw 0.5vw;
       border-radius: 0.35vw;
       white-space: nowrap;
       overflow: hidden;
@@ -1196,7 +1231,7 @@
         const isEnded = rem <= 0;
         const isRevealed = curMatch.status === 'completed';
 
-        let statusText = `ĐỎ: ${rT.className} vs XANH: ${bT.className}`;
+        let statusText = `<span style="color:#fca5a5;">ĐỎ: ${rT.className}</span> &nbsp;vs&nbsp; <span style="color:#7dd3fc;">XANH: ${bT.className}</span>`;
         let statusCls = '';
 
         if (isRevealed) {
@@ -1208,7 +1243,7 @@
         } else if (isSwap) {
           const swapWords = { 10:'TEN (10)', 9:'NINE (9)', 8:'EIGHT (8)', 7:'SEVEN (7)', 6:'SIX (6)', 5:'FIVE (5)', 4:'FOUR (4)', 3:'THREE (3)', 2:'TWO (2)', 1:'ONE (1)', 0:'SWITCH!' };
           const cWord = swapWords[rem - 40] || '';
-          statusText = `ĐỔI TABLET (50s–40s): ${cWord} • QUÊN = -5Đ`;
+          statusText = `ĐỔI TABLET (50s–40s): ${cWord} • QUÊN -5Đ`;
           statusCls = 'swap-warning';
         } else if (timerState.mode === 'prep') {
           statusText = '30 GIÂY CHUẨN BỊ ĐẶT ROBOT';
@@ -1257,23 +1292,23 @@
 
         el.innerHTML = `
           <div class="next-header-row">
-            <span class="next-title">NEXT ROUND (TRẬN KẾ TIẾP)</span>
+            <span class="next-title">NEXT ROUND • KẾ TIẾP</span>
             <span class="next-bracket-pill">TRẬN #${nextM.matchNumber} • BẢNG ${nextM.bracket}</span>
           </div>
 
           <div class="next-vs-cards">
             <div class="next-card-side red">
               <div class="next-card-class">
-                <span>SÂN ĐỎ: ${rT.className}</span>
-                <span style="font-size:0.68vw;color:#fca5a5;">${rT.code} • Lượt ${nextM.redTurn}</span>
+                <span style="overflow:hidden;text-overflow:ellipsis;">SÂN ĐỎ: ${rT.className}</span>
+                <span style="font-size:0.64vw;color:#fca5a5;flex-shrink:0;">${rT.code} • Lượt ${nextM.redTurn}</span>
               </div>
               <div class="next-card-stu">${rT.student1} - ${rT.student2}</div>
             </div>
 
             <div class="next-card-side blue">
               <div class="next-card-class">
-                <span>SÂN XANH: ${bT.className}</span>
-                <span style="font-size:0.68vw;color:#7dd3fc;">${bT.code} • Lượt ${nextM.blueTurn}</span>
+                <span style="overflow:hidden;text-overflow:ellipsis;">SÂN XANH: ${bT.className}</span>
+                <span style="font-size:0.64vw;color:#7dd3fc;flex-shrink:0;">${bT.code} • Lượt ${nextM.blueTurn}</span>
               </div>
               <div class="next-card-stu">${bT.student1} - ${bT.student2}</div>
             </div>
@@ -1281,7 +1316,7 @@
 
           <div class="next-ondeck-bar">
             ${afterM
-              ? `Chuẩn bị tiếp (Trận #${afterM.matchNumber} - Bảng ${afterM.bracket}): <b>${afterR.className}</b> vs <b>${afterB.className}</b>`
+              ? `Kế tiếp #${afterM.matchNumber} (Bảng ${afterM.bracket}): <b style="color:#fca5a5;">${afterR.className}</b> vs <b style="color:#7dd3fc;">${afterB.className}</b>`
               : `Trận #${nextM.matchNumber} là trận khép lại Vòng 2`}
           </div>
         `;
