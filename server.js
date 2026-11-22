@@ -140,6 +140,8 @@ const MIME_TYPES = {
   '.ico': 'image/x-icon',
   '.wav': 'audio/wav',
   '.mp3': 'audio/mpeg',
+  '.mp4': 'video/mp4',
+  '.mov': 'video/quicktime',
   '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 };
 
@@ -402,9 +404,28 @@ const server = http.createServer((req, res) => {
     }
     const ext = path.extname(filePath).toLowerCase();
     const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+    const range = req.headers.range;
+    if (range && (ext === '.mp4' || ext === '.mov')) {
+      const total = stats.size;
+      const parts = range.replace(/bytes=/, '').split('-');
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? Math.min(total - 1, parseInt(parts[1], 10)) : total - 1;
+      const chunkSize = (end - start) + 1;
+      res.writeHead(206, {
+        'Content-Range': `bytes ${start}-${end}/${total}`,
+        'Accept-Ranges': 'bytes',
+        'Content-Length': chunkSize,
+        'Content-Type': contentType,
+        'Cache-Control': 'public, max-age=3600'
+      });
+      fs.createReadStream(filePath, { start, end }).pipe(res);
+      return;
+    }
     res.writeHead(200, {
       'Content-Type': contentType,
-      'Cache-Control': 'no-cache'
+      'Content-Length': stats.size,
+      'Accept-Ranges': 'bytes',
+      'Cache-Control': (ext === '.mp4' || ext === '.mov') ? 'public, max-age=3600' : 'no-cache'
     });
     fs.createReadStream(filePath).pipe(res);
   });

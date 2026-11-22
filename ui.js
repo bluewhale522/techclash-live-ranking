@@ -2440,6 +2440,25 @@
       }
       showToast('👑 Đã chạy Transitions đá bay MindX sang trái & đổi Backdrop sang Logo TN! (Bấm Switch Backdrop để về nền gốc)', 'success');
     },
+    playLocalVideo(srcPath, title) {
+      if (!srcPath) return;
+      state.config.activeVideo = {
+        src: srcPath,
+        title: title || 'Video Phỏng Vấn',
+        playId: Date.now()
+      };
+      state.config.obsMainView = 'video_full';
+      state.config.transitionTrigger = {
+        id: Date.now(),
+        title: title || 'VIDEO PHỎNG VẤN',
+        subtitle: 'MINDX THÁI NGUYÊN • TECHCLASH 2026'
+      };
+      saveState(true, false);
+      if (state.config.transitionSound !== false) {
+        this.playTransitionSFX();
+      }
+      showToast('🎬 Đang phát Full Màn Hình trực tiếp lên OBS: ' + (title || srcPath), 'success');
+    },
     playDriveVideo(fileId, title) {
       if (!fileId) return;
       state.config.activeVideo = {
