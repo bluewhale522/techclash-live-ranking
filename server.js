@@ -30,7 +30,7 @@ let timerInterval = null;
 let sharedState = null;
 try {
   if (fs.existsSync(STATE_FILE)) {
-    sharedState = JSON.parse(fs.readFileSync(STATE_FILE, 'utf8'));
+    sharedState = JSON.parse(fs.readFileSync(STATE_FILE, 'utf8').replace(/^\uFEFF/, ''));
   }
 } catch (e) {
   console.warn('Could not read live-state.json:', e.message);
