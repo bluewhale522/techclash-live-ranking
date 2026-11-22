@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NEXT ROUND • TECHCLASH 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700;800;900&family=Inter:wght@600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 35%, #111c3a 0%, #060b16 65%, #02040a 100%);
+      color: #f8fafc;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    .next-screen {
+      width: 100vw;
+      height: 100vh;
+      padding: 3vh 4vw;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 2.5vh;
+    }
+    .top-bar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2vw;
+      border-bottom: 2px solid rgba(103, 232, 249, 0.3);
+      padding-bottom: 1.6vh;
+    }
+    .title-main {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 2.8vw;
+      font-weight: 900;
+      color: #fbbf24;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-shadow: 0 0 28px rgba(251, 191, 36, 0.45);
+      white-space: nowrap;
+    }
+    .match-pill {
+      background: rgba(8, 47, 73, 0.9);
+      border: 2px solid rgba(56, 189, 248, 0.65);
+      padding: 0.7vw 1.8vw;
+      border-radius: 999px;
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 1.6vw;
+      font-weight: 900;
+      color: #7dd3fc;
+      white-space: nowrap;
+    }
+
+    .cards-stage {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: stretch;
+      gap: 2.4vw;
+      min-height: 0;
+    }
+    .team-card {
+      border-radius: 1.4vw;
+      padding: 2.6vw 2.8vw;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 1.6vh;
+      min-width: 0;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
+    }
+    .team-card.red {
+      background: linear-gradient(145deg, rgba(153, 27, 27, 0.78) 0%, rgba(15, 23, 42, 0.94) 100%);
+      border: 2.5px solid #ef4444;
+    }
+    .team-card.blue {
+      background: linear-gradient(145deg, rgba(3, 105, 161, 0.78) 0%, rgba(15, 23, 42, 0.94) 100%);
+      border: 2.5px solid #38bdf8;
+    }
+    .card-side-label {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 1.5vw;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .team-card.red .card-side-label { color: #fca5a5; }
+    .team-card.blue .card-side-label { color: #7dd3fc; }
+
+    .card-class-name {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 3.4vw;
+      font-weight: 900;
+      color: #ffffff;
+      line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .card-meta-row {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 1.4vw;
+      font-weight: 800;
+      color: #cbd5e1;
+      white-space: nowrap;
+    }
+    .card-students {
+      margin-top: 1vh;
+      padding-top: 1.4vh;
+      border-top: 1.5px solid rgba(255, 255, 255, 0.16);
+      font-size: 2vw;
+      font-weight: 800;
+      color: #f8fafc;
+      line-height: 1.35;
+    }
+    .vs-badge {
+      align-self: center;
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 3.8vw;
+      font-weight: 900;
+      color: #fbbf24;
+      background: rgba(6, 10, 20, 0.92);
+      border: 2px solid rgba(251, 191, 36, 0.65);
+      border-radius: 1.2vw;
+      padding: 1.4vw 2vw;
+      text-shadow: 0 0 25px rgba(251, 191, 36, 0.6);
+      white-space: nowrap;
+    }
+
+    .bottom-bar {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.88);
+      border: 1.5px solid rgba(148, 163, 184, 0.35);
+      border-radius: 0.9vw;
+      padding: 1vw 2vw;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 1.35vw;
+      font-weight: 800;
+      color: #cbd5e1;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="next-screen" id="next-root"></div>
+
+  <script src="app.js"></script>
+  <script>
+    (function() {
+      const Engine = window.TechClashEngine;
+      const STORAGE_KEY = 'TECHCLASH_2026_VONG2_DEMO_V2';
+      const API_BASE = (typeof window !== 'undefined' && window.location.protocol.startsWith('http')) ? '' : 'http://127.0.0.1:8088';
+      const bc = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('techclash_2026_vong2_channel') : null;
+
+      let state = loadState();
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && Array.isArray(parsed.teams) && Array.isArray(parsed.matches)) return parsed;
+          }
+        } catch (e) {}
+        const teams = JSON.parse(JSON.stringify(Engine.INITIAL_TEAMS));
+        const matches = Engine.generateInterleavedSchedule(teams, false);
+        Engine.populateDemoMatches(matches, 'clear');
+        if (matches.length > 0) matches[0].status = 'live';
+        return { config: { ...Engine.DEFAULT_CONFIG }, teams, matches, lastUpdated: new Date().toISOString() };
+      }
+
+      function getTeamById(id) {
+        return state.teams.find(t => t.id === id) || { id, code: id, className: id, student1: '', student2: '' };
+      }
+
+      function getCurrentMatch() {
+        let m = state.matches.find(x => x.status === 'live');
+        if (!m) m = state.matches.find(x => x.status === 'pending');
+        if (!m && state.matches.length > 0) m = state.matches[state.matches.length - 1];
+        return m;
+      }
+
+      function getNextMatch(curMatch) {
+        if (!curMatch) return null;
+        const idx = state.matches.findIndex(x => x.id === curMatch.id);
+        return state.matches[idx + 1] || null;
+      }
+
+      function render() {
+        const root = document.getElementById('next-root');
+        if (!root) return;
+        const curMatch = getCurrentMatch();
+        const nextM = getNextMatch(curMatch);
+        const doneCount = state.matches.filter(m => m.status === 'completed').length;
+
+        if (!nextM) {
+          root.innerHTML = `
+            <div class="top-bar">
+              <div class="title-main">TECHCLASH 2026 • NEXT ROUND</div>
+              <div class="match-pill">HOÀN TẤT</div>
+            </div>
+            <div style="margin:auto;text-align:center;font-family:'Chakra Petch';font-size:3vw;font-weight:900;color:#e2e8f0;">
+              ĐÃ ĐẾN TRẬN CUỐI CÙNG CỦA GIẢI ĐẤU!
+            </div>
+            <div class="bottom-bar">
+              <span>MINDX THÁI NGUYÊN • VÒNG 2 CHUNG KẾT ĐỒNG ĐỘI</span>
+              <span>TIẾN ĐỘ: ${doneCount}/${state.matches.length} TRẬN</span>
+            </div>
+          `;
+          return;
+        }
+
+        const rT = getTeamById(nextM.redTeamId);
+        const bT = getTeamById(nextM.blueTeamId);
+        const curR = curMatch ? getTeamById(curMatch.redTeamId) : null;
+        const curB = curMatch ? getTeamById(curMatch.blueTeamId) : null;
+
+        root.innerHTML = `
+          <div class="top-bar">
+            <div class="title-main">NEXT ROUND • MỜI ĐỘI CHUẨN BỊ</div>
+            <div class="match-pill">TRẬN #${nextM.matchNumber} • BẢNG ${nextM.bracket} (LƯỢT ${nextM.wave})</div>
+          </div>
+
+          <div class="cards-stage">
+            <div class="team-card red">
+              <div class="card-side-label">SÂN ĐỎ (BÊN TRÁI) • LƯỢT ${nextM.redTurn}/2</div>
+              <div class="card-class-name">${rT.className}</div>
+              <div class="card-meta-row">${rT.code}${rT.lec ? ' • GV: ' + rT.lec : ''}</div>
+              <div class="card-students">
+                <div>1. ${rT.student1}</div>
+                <div>2. ${rT.student2}</div>
+              </div>
+            </div>
+
+            <div class="vs-badge">VS</div>
+
+            <div class="team-card blue">
+              <div class="card-side-label">SÂN XANH (BÊN PHẢI) • LƯỢT ${nextM.blueTurn}/2</div>
+              <div class="card-class-name">${bT.className}</div>
+              <div class="card-meta-row">${bT.code}${bT.lec ? ' • GV: ' + bT.lec : ''}</div>
+              <div class="card-students">
+                <div>1. ${bT.student1}</div>
+                <div>2. ${bT.student2}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bottom-bar">
+            <span>
+              ${curMatch
+                ? `Đang thi trên sa bàn (#${curMatch.matchNumber}): <b style="color:#fca5a5;">${curR.className}</b> vs <b style="color:#7dd3fc;">${curB.className}</b>`
+                : 'MINDX THÁI NGUYÊN • TECHCLASH 2026'}
+            </span>
+            <span>TIẾN ĐỘ: ${doneCount}/${state.matches.length} TRẬN</span>
+          </div>
+        `;
+      }
+
+      if (bc) {
+        bc.onmessage = (ev) => {
+          if (ev.data && ev.data.type === 'STATE_UPDATED' && ev.data.state) {
+            state = ev.data.state;
+            render();
+          }
+        };
+      }
+
+      let lastServerStamp = '';
+      function pull() {
+        fetch(API_BASE + '/api/state?_t=' + Date.now(), { cache: 'no-store' })
+          .then(r => r.json())
+          .then(res => {
+            if (res && res.state && (res.state.lastUpdated || '') !== lastServerStamp) {
+              lastServerStamp = res.state.lastUpdated || '';
+              state = res.state;
+              render();
+            }
+          }).catch(() => {});
+      }
+      pull();
+      setInterval(pull, 1000);
+
+      function connectSSE() {
+        try {
+          const es = new EventSource(API_BASE + '/api/stream');
+          es.onmessage = (ev) => {
+            try {
+              const data = JSON.parse(ev.data);
+              if ((data.type === 'INIT' || data.type === 'STATE_UPDATED') && data.state) {
+                lastServerStamp = data.state.lastUpdated || '';
+                state = data.state;
+                render();
+              }
+            } catch (e) {}
+          };
+          es.onerror = () => { try { es.close(); } catch (e) {} setTimeout(connectSSE, 2500); };
+        } catch (e) {}
+      }
+      connectSSE();
+
+      document.addEventListener('DOMContentLoaded', render);
+    })();
+  </script>
+</body>
+</html>

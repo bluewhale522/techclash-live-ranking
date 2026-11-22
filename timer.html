@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TIMER • TECHCLASH 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700;800;900&family=Inter:wght@600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 35%, #0f1f3d 0%, #060b16 65%, #02040a 100%);
+      color: #f8fafc;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    .timer-screen {
+      width: 100vw;
+      height: 100vh;
+      padding: 2.6vh 4vw;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+    .top-bar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2vw;
+    }
+    .brand-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.9vw;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1.5px solid rgba(56, 189, 248, 0.55);
+      padding: 0.65vw 1.5vw;
+      border-radius: 999px;
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 1.5vw;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      color: #ffffff;
+      white-space: nowrap;
+    }
+    .live-dot {
+      width: 0.85vw;
+      height: 0.85vw;
+      border-radius: 50%;
+      background: #ef4444;
+      box-shadow: 0 0 14px #ef4444;
+      animation: blinkDot 0.9s infinite alternate;
+    }
+    @keyframes blinkDot {
+      from { opacity: 0.35; transform: scale(0.85); }
+      to { opacity: 1; transform: scale(1.15); }
+    }
+    .match-badge {
+      background: rgba(8, 47, 73, 0.85);
+      border: 1.5px solid rgba(103, 232, 249, 0.6);
+      padding: 0.65vw 1.8vw;
+      border-radius: 999px;
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 1.5vw;
+      font-weight: 900;
+      color: #67e8f9;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .clock-stage {
+      flex: 1;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2vh;
+    }
+    .big-clock {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 24vw;
+      font-weight: 900;
+      line-height: 0.9;
+      letter-spacing: 0.03em;
+      color: #ffffff;
+      text-shadow: 0 0 55px rgba(56, 189, 248, 0.85), 0 10px 30px rgba(0, 0, 0, 0.9);
+      white-space: nowrap;
+      user-select: none;
+    }
+    .big-clock.swap-warning {
+      color: #fbbf24;
+      text-shadow: 0 0 65px rgba(251, 191, 36, 0.95), 0 10px 30px rgba(0, 0, 0, 0.9);
+      animation: pulseClock 0.45s infinite alternate;
+    }
+    .big-clock.ended {
+      color: #f87171;
+      text-shadow: 0 0 65px rgba(239, 68, 68, 0.95), 0 10px 30px rgba(0, 0, 0, 0.9);
+    }
+    @keyframes pulseClock {
+      from { transform: scale(0.97); }
+      to { transform: scale(1.03); }
+    }
+
+    .status-banner {
+      padding: 0.9vw 2.6vw;
+      border-radius: 0.9vw;
+      background: rgba(15, 23, 42, 0.9);
+      border: 2px solid rgba(103, 232, 249, 0.45);
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 2.1vw;
+      font-weight: 900;
+      color: #f8fafc;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    }
+    .status-banner.swap-warning {
+      background: linear-gradient(90deg, #b45309, #d97706);
+      border-color: #fde68a;
+      color: #ffffff;
+    }
+    .status-banner.revealed {
+      background: linear-gradient(90deg, #065f46, #047857);
+      border-color: #6ee7b7;
+      color: #ecfdf5;
+    }
+
+    .vs-footer {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 1.8vw;
+      background: linear-gradient(90deg, rgba(127, 29, 29, 0.72) 0%, rgba(9, 14, 28, 0.92) 50%, rgba(12, 74, 110, 0.72) 100%);
+      border: 1.5px solid rgba(103, 232, 249, 0.5);
+      border-radius: 1vw;
+      padding: 1.1vw 2vw;
+    }
+    .team-col {
+      min-width: 0;
+      overflow: hidden;
+    }
+    .team-col.blue {
+      text-align: right;
+    }
+    .side-tag {
+      font-size: 1vw;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+    .side-tag.red { color: #fca5a5; }
+    .side-tag.blue { color: #7dd3fc; }
+    .team-name {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 2.3vw;
+      font-weight: 900;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .team-stu {
+      font-size: 1.2vw;
+      font-weight: 600;
+      color: #e2e8f0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .vs-center {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 2.6vw;
+      font-weight: 900;
+      color: #fbbf24;
+      padding: 0.4vw 1.4vw;
+      border-radius: 0.7vw;
+      background: rgba(6, 10, 20, 0.9);
+      border: 1.5px solid rgba(251, 191, 36, 0.55);
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="timer-screen" id="timer-root"></div>
+
+  <script src="app.js"></script>
+  <script src="vex-sfx.js"></script>
+  <script>
+    (function() {
+      const Engine = window.TechClashEngine;
+      const STORAGE_KEY = 'TECHCLASH_2026_VONG2_DEMO_V2';
+      const API_BASE = (typeof window !== 'undefined' && window.location.protocol.startsWith('http')) ? '' : 'http://127.0.0.1:8088';
+      const bc = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('techclash_2026_vong2_channel') : null;
+
+      let state = loadState();
+      let timerState = { mode: 'match', totalSec: 90, remainingSec: 90, running: false, endTime: null };
+      let serverTimeOffset = 0;
+      let localEndTime = null;
+      let lastPlayedTimerSec = null;
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && Array.isArray(parsed.teams) && Array.isArray(parsed.matches)) return parsed;
+          }
+        } catch (e) {}
+        const teams = JSON.parse(JSON.stringify(Engine.INITIAL_TEAMS));
+        const matches = Engine.generateInterleavedSchedule(teams, false);
+        Engine.populateDemoMatches(matches, 'clear');
+        if (matches.length > 0) matches[0].status = 'live';
+        return { config: { ...Engine.DEFAULT_CONFIG }, teams, matches, lastUpdated: new Date().toISOString() };
+      }
+
+      function getTeamById(id) {
+        return state.teams.find(t => t.id === id) || { id, code: id, className: id, student1: '', student2: '' };
+      }
+
+      function getCurrentMatch() {
+        let m = state.matches.find(x => x.status === 'live');
+        if (!m) m = state.matches.find(x => x.status === 'pending');
+        if (!m && state.matches.length > 0) m = state.matches[state.matches.length - 1];
+        return m;
+      }
+
+      function formatSec(sec) {
+        const m = Math.floor(sec / 60);
+        const s = sec % 60;
+        return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+      }
+
+      function triggerVexTimerAudioOnChange(prevRunning, prevSec, newRunning, newSec, mode) {
+        if (!window.VexIQSound) return;
+        if (state.config && state.config.transitionSound === false) {
+          window.VexIQSound.stopBgMusic();
+          return;
+        }
+        if (!prevRunning && newRunning && newSec > 0) {
+          window.VexIQSound.playStart();
+          window.VexIQSound.startBgMusic();
+          lastPlayedTimerSec = newSec;
+          return;
+        }
+        if (prevRunning && !newRunning) {
+          window.VexIQSound.stopBgMusic();
+        }
+        if (newSec !== prevSec && (newRunning || newSec === 0)) {
+          if (lastPlayedTimerSec !== newSec) {
+            lastPlayedTimerSec = newSec;
+            window.VexIQSound.onTimerSecond(newSec, mode);
+            if (newSec <= 0) window.VexIQSound.stopBgMusic();
+          }
+        }
+      }
+
+      function render() {
+        const root = document.getElementById('timer-root');
+        if (!root) return;
+        const curMatch = getCurrentMatch();
+        if (!curMatch) {
+          root.innerHTML = `
+            <div class="top-bar">
+              <div class="brand-pill"><span class="live-dot"></span> TECHCLASH 2026 • TIMER</div>
+              <div class="match-badge">ĐANG CHỜ LỊCH ĐẤU</div>
+            </div>
+            <div class="clock-stage">
+              <div class="big-clock">${formatSec(timerState.remainingSec)}</div>
+              <div class="status-banner">SẴN SÀNG THI ĐẤU</div>
+            </div>
+            <div></div>
+          `;
+          return;
+        }
+
+        const rT = getTeamById(curMatch.redTeamId);
+        const bT = getTeamById(curMatch.blueTeamId);
+        const rem = timerState.remainingSec;
+        const isSwap = timerState.mode === 'match' && rem <= 50 && rem >= 40 && rem > 0;
+        const isEnded = rem <= 0;
+        const isRevealed = curMatch.status === 'completed';
+
+        let statusText = timerState.mode === 'prep'
+          ? '30 GIÂY CHUẨN BỊ ĐẶT ROBOT'
+          : (timerState.running ? 'ĐANG THI ĐẤU CHÍNH THỨC' : 'SẴN SÀNG BẮT ĐẦU');
+        let statusCls = '';
+
+        if (isRevealed) {
+          statusText = `ĐÃ CÔNG BỐ: ĐỎ ${curMatch.redScore}đ — XANH ${curMatch.blueScore}đ`;
+          statusCls = 'revealed';
+        } else if (isEnded) {
+          statusText = 'HẾT GIỜ — TRỌNG TÀI ĐANG CHẤM ĐIỂM';
+          statusCls = 'swap-warning';
+        } else if (isSwap) {
+          const swapWords = { 10:'TEN (10)', 9:'NINE (9)', 8:'EIGHT (8)', 7:'SEVEN (7)', 6:'SIX (6)', 5:'FIVE (5)', 4:'FOUR (4)', 3:'THREE (3)', 2:'TWO (2)', 1:'ONE (1)', 0:'SWITCH!' };
+          statusText = `ĐỔI TABLET (50s–40s): ${swapWords[rem - 40] || ''} • QUÊN -5Đ`;
+          statusCls = 'swap-warning';
+        }
+
+        root.innerHTML = `
+          <div class="top-bar">
+            <div class="brand-pill"><span class="live-dot"></span> TECHCLASH 2026 • ĐỒNG HỒ SA BÀN</div>
+            <div class="match-badge">TRẬN #${curMatch.matchNumber} • LƯỢT ${curMatch.wave} • BẢNG ${curMatch.bracket}</div>
+          </div>
+
+          <div class="clock-stage">
+            <div class="big-clock ${isSwap ? 'swap-warning' : ''} ${isEnded && !isRevealed ? 'ended' : ''}">
+              ${formatSec(rem)}
+            </div>
+            <div class="status-banner ${statusCls}">${statusText}</div>
+          </div>
+
+          <div class="vs-footer">
+            <div class="team-col red">
+              <div class="side-tag red">SÂN ĐỎ • ${rT.code} • LƯỢT ${curMatch.redTurn}/2</div>
+              <div class="team-name">${rT.className}</div>
+              <div class="team-stu">${rT.student1} - ${rT.student2}</div>
+            </div>
+            <div class="vs-center">
+              ${isRevealed ? `${curMatch.redScore} : ${curMatch.blueScore}` : 'VS'}
+            </div>
+            <div class="team-col blue">
+              <div class="side-tag blue">SÂN XANH • ${bT.code} • LƯỢT ${curMatch.blueTurn}/2</div>
+              <div class="team-name">${bT.className}</div>
+              <div class="team-stu">${bT.student1} - ${bT.student2}</div>
+            </div>
+          </div>
+        `;
+      }
+
+      function applyIncomingTimerState(incoming, srvNow) {
+        if (!incoming) return false;
+        if (typeof srvNow === 'number' && srvNow > 0) serverTimeOffset = srvNow - Date.now();
+        const prevSec = timerState.remainingSec;
+        const prevMode = timerState.mode;
+        const prevRunning = timerState.running;
+
+        timerState.mode = incoming.mode || 'match';
+        timerState.totalSec = incoming.totalSec || (timerState.mode === 'prep' ? 30 : 90);
+        timerState.running = !!incoming.running;
+        timerState.endTime = incoming.endTime || null;
+
+        if (timerState.running) {
+          if (timerState.endTime) {
+            const nowEst = Date.now() + serverTimeOffset;
+            timerState.remainingSec = Math.max(0, Math.ceil((timerState.endTime - nowEst) / 1000));
+            localEndTime = Date.now() + timerState.remainingSec * 1000;
+          } else if (!prevRunning || Math.abs((incoming.remainingSec || 0) - timerState.remainingSec) > 1) {
+            timerState.remainingSec = typeof incoming.remainingSec === 'number' ? incoming.remainingSec : timerState.totalSec;
+            localEndTime = Date.now() + timerState.remainingSec * 1000;
+          }
+        } else {
+          localEndTime = null;
+          if (typeof incoming.remainingSec === 'number') timerState.remainingSec = incoming.remainingSec;
+        }
+        triggerVexTimerAudioOnChange(prevRunning, prevSec, timerState.running, timerState.remainingSec, timerState.mode);
+        return (prevSec !== timerState.remainingSec || prevMode !== timerState.mode || prevRunning !== timerState.running);
+      }
+
+      setInterval(() => {
+        if (!timerState.running) return;
+        const prevSec = timerState.remainingSec;
+        let left = timerState.remainingSec;
+        if (timerState.endTime) {
+          left = Math.max(0, Math.ceil((timerState.endTime - (Date.now() + serverTimeOffset)) / 1000));
+        } else if (localEndTime) {
+          left = Math.max(0, Math.ceil((localEndTime - Date.now()) / 1000));
+        }
+        if (left !== prevSec) {
+          timerState.remainingSec = left;
+          triggerVexTimerAudioOnChange(true, prevSec, left > 0, left, timerState.mode);
+          if (left <= 0) { timerState.running = false; localEndTime = null; }
+          render();
+        }
+      }, 200);
+
+      if (bc) {
+        bc.onmessage = (ev) => {
+          if (!ev.data) return;
+          if (ev.data.type === 'STATE_UPDATED' && ev.data.state) {
+            state = ev.data.state;
+            if (ev.data.timerState) applyIncomingTimerState(ev.data.timerState);
+            render();
+          } else if (ev.data.type === 'TIMER_TICK' && ev.data.timerState) {
+            if (applyIncomingTimerState(ev.data.timerState)) render();
+          }
+        };
+      }
+
+      let lastServerStamp = '';
+      function pull() {
+        fetch(API_BASE + '/api/state?_t=' + Date.now(), { cache: 'no-store' })
+          .then(r => r.json())
+          .then(res => {
+            if (!res) return;
+            let changed = false;
+            if (res.state && (res.state.lastUpdated || '') !== lastServerStamp) {
+              lastServerStamp = res.state.lastUpdated || '';
+              state = res.state;
+              changed = true;
+            }
+            if (res.timerState && applyIncomingTimerState(res.timerState, res.serverNow)) changed = true;
+            if (changed) render();
+          }).catch(() => {});
+      }
+      pull();
+      setInterval(pull, 700);
+
+      function connectSSE() {
+        try {
+          const es = new EventSource(API_BASE + '/api/stream');
+          es.onmessage = (ev) => {
+            try {
+              const data = JSON.parse(ev.data);
+              if ((data.type === 'INIT' || data.type === 'STATE_UPDATED') && data.state) {
+                lastServerStamp = data.state.lastUpdated || '';
+                state = data.state;
+                if (data.timerState) applyIncomingTimerState(data.timerState);
+                render();
+              } else if (data.type === 'TIMER_TICK' && data.timerState) {
+                if (applyIncomingTimerState(data.timerState)) render();
+              }
+            } catch (e) {}
+          };
+          es.onerror = () => { try { es.close(); } catch (e) {} setTimeout(connectSSE, 2500); };
+        } catch (e) {}
+      }
+      connectSSE();
+
+      document.addEventListener('DOMContentLoaded', render);
+    })();
+  </script>
+</body>
+</html>
