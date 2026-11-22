@@ -81,7 +81,7 @@
       );
     }
 
-    /* Chế độ VIDEO TO TOÀN MÀN HÌNH (Chỉ giữ thanh 2 đội trên đầu, ẩn Timer, Next Round, Tiến độ & Ticker) */
+    /* Chế độ VIDEO TO TOÀN MÀN HÌNH (Chỉ còn khung video lớn + thanh chạy chữ dưới cùng, ẩn Timer, Next Round, Tiến độ & Tên đội) */
     body.camera-full-mode .livestream-bg-layer {
       clip-path: polygon(
         0% 0%,
@@ -89,8 +89,8 @@
         1.2% 100%,
         1.2% 2%,
         98.8% 2%,
-        98.8% 98%,
-        1.2% 98%,
+        98.8% 88%,
+        1.2% 88%,
         1.2% 100%,
         100% 100%,
         100% 0%
@@ -98,15 +98,14 @@
     }
     body.camera-full-mode .stream-top-hud,
     body.camera-full-mode .box-top-right,
-    body.camera-full-mode .box-bottom-right,
-    body.camera-full-mode .box-bottom-ticker {
+    body.camera-full-mode .box-bottom-right {
       display: none !important;
     }
     body.camera-full-mode .box-main-left {
       left: 1.2%;
       top: 2%;
       width: 97.6%;
-      height: 96%;
+      height: 86%;
       padding: 0.7vw 0.9vw;
       border-radius: 0.9vw;
       border: 2px solid rgba(103, 232, 249, 0.75);
