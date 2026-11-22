@@ -166,8 +166,9 @@
     } catch (e) {}
   }
 
-  // ==================== ÂM THANH CÒI & CẢNH BÁO 40s-50s (WEB AUDIO API) ====================
+  // ==================== ÂM THANH ĐÃ TẮT TRÊN ADMIN (CHỈ PHÁT TRÊN CÁC MÀN OBS) ====================
   function playSound(type) {
+    return; // Không phát âm thanh trên trang Admin để tránh dội loa điều khiển
     if (state.config && state.config.transitionSound === false) return;
     if (window.VexIQSound) {
       if (type === 'start') { window.VexIQSound.playStart(); return; }
@@ -251,20 +252,11 @@
         timerState.remainingSec = timerState.totalSec;
       }
       timerState.running = true;
-      playSound('start');
-      if (window.VexIQSound && (!state.config || state.config.transitionSound !== false)) {
-        window.VexIQSound.startBgMusic();
-      }
       timerState.intervalId = setInterval(() => {
         if (timerState.remainingSec > 0) {
           timerState.remainingSec--;
           const rem = timerState.remainingSec;
           const elapsed = timerState.totalSec - rem;
-
-          // Phát âm thanh VEX IQ Competition cho từng giây (50s->41s: Ten..One, 40s: Switch Horn, 10s->1s: Ten..One, 0s: End Buzzer, các giây khác: VEX Tick)
-          if (window.VexIQSound && (!state.config || state.config.transitionSound !== false)) {
-            window.VexIQSound.onTimerSecond(rem, timerState.mode);
-          }
 
           // Ở chế độ 90s: Giây thứ 40 (còn 50s) bắt đầu khung chuyển giao Tablet
           if (timerState.mode === 'match' && elapsed === 40 && !timerState.alerted40s) {
@@ -300,9 +292,6 @@
 
   function stopTimer() {
     timerState.running = false;
-    if (window.VexIQSound) {
-      window.VexIQSound.stopBgMusic();
-    }
     if (timerState.intervalId) {
       clearInterval(timerState.intervalId);
       timerState.intervalId = null;
@@ -2435,9 +2424,6 @@
       saveState(true, false);
       if (state.config.transitionSound !== false) {
         this.playTransitionSFX();
-        if (window.VexIQSound) {
-          setTimeout(() => { window.VexIQSound.playStart(); }, 480);
-        }
       }
       showToast('👑 Đã chạy Transitions đá bay MindX sang trái & đổi Backdrop sang Logo TN! (Bấm Switch Backdrop để về nền gốc)', 'success');
     },

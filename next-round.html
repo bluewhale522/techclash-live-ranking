@@ -17,6 +17,15 @@
       color: #f8fafc;
       font-family: 'Inter', system-ui, sans-serif;
     }
+    @property --tc-border-angle {
+      syntax: '<angle>';
+      inherits: false;
+      initial-value: 0deg;
+    }
+    @keyframes tcBorderChase {
+      from { --tc-border-angle: 0deg; }
+      to { --tc-border-angle: 360deg; }
+    }
     .next-screen {
       width: 100vw;
       height: 100vh;
@@ -25,6 +34,31 @@
       flex-direction: column;
       justify-content: space-between;
       gap: 2.5vh;
+      position: relative;
+    }
+    .next-screen::before {
+      content: "";
+      position: absolute;
+      inset: 0.9vw;
+      padding: 3.5px;
+      border-radius: 1.4vw;
+      background: conic-gradient(
+        from var(--tc-border-angle),
+        rgba(251, 191, 36, 0.12) 0deg,
+        rgba(251, 191, 36, 0.12) 200deg,
+        #f97316 250deg,
+        #fbbf24 295deg,
+        #38bdf8 332deg,
+        #ffffff 350deg,
+        rgba(251, 191, 36, 0.12) 360deg
+      );
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+      animation: tcBorderChase 4.2s linear infinite;
+      pointer-events: none;
+      z-index: 20;
     }
     .top-bar {
       width: 100%;
@@ -74,15 +108,53 @@
       gap: 1.6vh;
       min-width: 0;
       overflow: hidden;
+      position: relative;
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
+    }
+    .team-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      padding: 3px;
+      border-radius: inherit;
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+      animation: tcBorderChase 3.4s linear infinite;
+      pointer-events: none;
+      z-index: 5;
     }
     .team-card.red {
       background: linear-gradient(145deg, rgba(153, 27, 27, 0.78) 0%, rgba(15, 23, 42, 0.94) 100%);
-      border: 2.5px solid #ef4444;
+      border: 1.5px solid rgba(239, 68, 68, 0.45);
+    }
+    .team-card.red::before {
+      background: conic-gradient(
+        from var(--tc-border-angle),
+        transparent 0deg,
+        transparent 210deg,
+        #ef4444 260deg,
+        #fbbf24 315deg,
+        #ffffff 345deg,
+        transparent 360deg
+      );
     }
     .team-card.blue {
       background: linear-gradient(145deg, rgba(3, 105, 161, 0.78) 0%, rgba(15, 23, 42, 0.94) 100%);
-      border: 2.5px solid #38bdf8;
+      border: 1.5px solid rgba(56, 189, 248, 0.45);
+    }
+    .team-card.blue::before {
+      background: conic-gradient(
+        from var(--tc-border-angle),
+        transparent 0deg,
+        transparent 210deg,
+        #0284c7 260deg,
+        #67e8f9 315deg,
+        #ffffff 345deg,
+        transparent 360deg
+      );
+      animation-direction: reverse;
     }
     .card-side-label {
       font-family: 'Chakra Petch', sans-serif;

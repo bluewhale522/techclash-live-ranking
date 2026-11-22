@@ -17,6 +17,15 @@
       color: #f8fafc;
       font-family: 'Inter', system-ui, sans-serif;
     }
+    @property --tc-border-angle {
+      syntax: '<angle>';
+      inherits: false;
+      initial-value: 0deg;
+    }
+    @keyframes tcBorderChase {
+      from { --tc-border-angle: 0deg; }
+      to { --tc-border-angle: 360deg; }
+    }
     .timer-screen {
       width: 100vw;
       height: 100vh;
@@ -26,6 +35,30 @@
       align-items: center;
       justify-content: space-between;
       position: relative;
+    }
+    .timer-screen::before {
+      content: "";
+      position: absolute;
+      inset: 0.9vw;
+      padding: 3.5px;
+      border-radius: 1.4vw;
+      background: conic-gradient(
+        from var(--tc-border-angle),
+        rgba(56, 189, 248, 0.12) 0deg,
+        rgba(56, 189, 248, 0.12) 200deg,
+        #38bdf8 255deg,
+        #67e8f9 295deg,
+        #fbbf24 330deg,
+        #ffffff 350deg,
+        rgba(56, 189, 248, 0.12) 360deg
+      );
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+      animation: tcBorderChase 4s linear infinite;
+      pointer-events: none;
+      z-index: 20;
     }
     .top-bar {
       width: 100%;

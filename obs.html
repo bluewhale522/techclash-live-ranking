@@ -818,6 +818,16 @@
     /* ============================================================================
      * KHUNG 2: KHUNG TRÊN BÊN PHẢI — ĐỒNG HỒ ĐẾM NGƯỢC 90S (x: 75.1% -> 97.0%, y: 17.6% -> 48.5%)
      * ============================================================================ */
+    @property --tc-border-angle {
+      syntax: '<angle>';
+      inherits: false;
+      initial-value: 0deg;
+    }
+    @keyframes tcBorderChase {
+      from { --tc-border-angle: 0deg; }
+      to { --tc-border-angle: 360deg; }
+    }
+
     .box-top-right {
       position: absolute;
       left: 75.1%;
@@ -833,6 +843,45 @@
       border-radius: 0.6vw;
       background: rgba(6, 11, 24, 0.45);
       backdrop-filter: blur(3px);
+      overflow: hidden;
+    }
+    .box-top-right::before,
+    .box-bottom-right::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      padding: 2.5px;
+      border-radius: inherit;
+      background: conic-gradient(
+        from var(--tc-border-angle),
+        transparent 0deg,
+        transparent 210deg,
+        rgba(56, 189, 248, 0.4) 245deg,
+        #67e8f9 290deg,
+        #fbbf24 325deg,
+        #ffffff 348deg,
+        transparent 360deg
+      );
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+      animation: tcBorderChase 3.2s linear infinite;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .box-bottom-right::before {
+      background: conic-gradient(
+        from var(--tc-border-angle),
+        transparent 0deg,
+        transparent 210deg,
+        rgba(249, 115, 22, 0.45) 245deg,
+        #fbbf24 290deg,
+        #38bdf8 325deg,
+        #ffffff 348deg,
+        transparent 360deg
+      );
+      animation-duration: 3.6s;
     }
 
     .timer-match-badge {
