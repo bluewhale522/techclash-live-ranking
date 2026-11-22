@@ -302,6 +302,10 @@
           <button class="btn-xs btn-amber" onclick="window.TCApp.stopFullscreenVideo()" title="Tắt Video Full Màn Hình và quay lại giao diện OBS">
             ⏹ Tắt Video Full Màn (Về OBS)
           </button>
+          <div id="admin-video-monitor" style="display:none;align-items:center;gap:8px;margin-left:8px;padding:3px 8px;border-radius:8px;background:rgba(15,23,42,0.85);border:1px solid rgba(56,189,248,0.4);">
+            <video id="admin-video-player" controls playsinline style="height:46px;width:82px;border-radius:6px;background:#000;object-fit:contain;"></video>
+            <span id="admin-video-status" style="font-size:11px;font-weight:700;color:#38bdf8;white-space:nowrap;">🔊 Đang phát loa Admin</span>
+          </div>
         </div>
       </div>
 

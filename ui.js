@@ -2350,6 +2350,9 @@
     publishScoreToOBS: publishScoreToOBSScreen,
     advanceNextRound: advanceToNextRoundOnArena,
     setOBSView(viewMode) {
+      if (viewMode !== 'video_full' && this.stopAdminVideoMonitor) {
+        this.stopAdminVideoMonitor();
+      }
       const tInput = document.getElementById('admin-transition-title');
       const sInput = document.getElementById('admin-transition-sub');
       if (tInput && tInput.value.trim()) state.config.transitionTitle = tInput.value.trim();
@@ -2440,6 +2443,34 @@
       }
       showToast('👑 Đã chạy Transitions đá bay MindX sang trái & đổi Backdrop sang Logo TN! (Bấm Switch Backdrop để về nền gốc)', 'success');
     },
+    startAdminVideoMonitor(srcPath, title) {
+      const monitor = document.getElementById('admin-video-monitor');
+      const player = document.getElementById('admin-video-player');
+      const status = document.getElementById('admin-video-status');
+      if (!player) return;
+      if (monitor) monitor.style.display = 'flex';
+      if (status) status.textContent = '🔊 Đang phát loa Admin: ' + (title || 'Video');
+      player.muted = false;
+      player.volume = 1.0;
+      player.src = srcPath;
+      player.load();
+      player.play().catch(err => {
+        console.warn('Admin video play error:', err);
+      });
+      player.onended = () => {
+        if (status) status.textContent = '⏹ Đã phát xong: ' + (title || 'Video');
+      };
+    },
+    stopAdminVideoMonitor() {
+      const monitor = document.getElementById('admin-video-monitor');
+      const player = document.getElementById('admin-video-player');
+      if (player) {
+        player.pause();
+        player.removeAttribute('src');
+        player.load();
+      }
+      if (monitor) monitor.style.display = 'none';
+    },
     playLocalVideo(srcPath, title) {
       if (!srcPath) return;
       state.config.activeVideo = {
@@ -2457,7 +2488,8 @@
       if (state.config.transitionSound !== false) {
         this.playTransitionSFX();
       }
-      showToast('🎬 Đang phát Full Màn Hình trực tiếp lên OBS: ' + (title || srcPath), 'success');
+      this.startAdminVideoMonitor(srcPath, title);
+      showToast('🎬 Đang phát Full Màn Hình + Loa Admin: ' + (title || srcPath), 'success');
     },
     playDriveVideo(fileId, title) {
       if (!fileId) return;
@@ -2479,6 +2511,7 @@
       showToast('🎬 Đang phát Full Màn Hình (Không khung OBS): ' + (title || fileId), 'success');
     },
     stopFullscreenVideo() {
+      this.stopAdminVideoMonitor();
       state.config.obsMainView = state.config.cutoutType || 'chroma_green';
       state.config.activeVideo = null;
       state.config.transitionTrigger = {
