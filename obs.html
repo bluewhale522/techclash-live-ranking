@@ -1125,6 +1125,11 @@
       </div>
     </div>
 
+    <!-- Lớp Phát Video Phỏng Vấn Full Màn Hình (Che hoàn toàn khung OBS, không viền) -->
+    <div id="fullscreen-video-overlay" style="display:none;position:fixed;inset:0;width:100vw;height:100vh;background:#000;z-index:8500;">
+      <iframe id="fullscreen-video-iframe" src="" style="width:100%;height:100%;border:0;" allow="autoplay; fullscreen; encrypted-media" allowfullscreen></iframe>
+    </div>
+
     <!-- Tiêu đề HUD trên đỉnh: Dòng 1 TECHCLASH 2026, Dòng 2 ĐỎ vs XANH & Tiến độ -->
     <div class="stream-top-hud">
       <div class="hud-title-block">
@@ -1427,6 +1432,26 @@
           document.body.classList.add('bg-tn');
         } else {
           document.body.classList.remove('bg-tn');
+        }
+
+        // Chế độ Phát Video Phỏng Vấn Full Màn Hình (Không có khung OBS)
+        const fvOv = document.getElementById('fullscreen-video-overlay');
+        const fvFrame = document.getElementById('fullscreen-video-iframe');
+        if (fvOv && fvFrame) {
+          if (viewMode === 'video_full' && state.config.activeVideo && state.config.activeVideo.id) {
+            const playKey = String(state.config.activeVideo.playId || state.config.activeVideo.id);
+            if (fvOv.getAttribute('data-play-key') !== playKey) {
+              fvOv.setAttribute('data-play-key', playKey);
+              fvFrame.src = `https://drive.google.com/file/d/${encodeURIComponent(state.config.activeVideo.id)}/preview?autoplay=1`;
+            }
+            fvOv.style.display = 'block';
+          } else {
+            fvOv.style.display = 'none';
+            if (fvOv.getAttribute('data-play-key')) {
+              fvOv.removeAttribute('data-play-key');
+              fvFrame.src = '';
+            }
+          }
         }
 
         // Bật chế độ ĐỤC LỖ TRONG SUỐT 100% (Alpha Cutout) ngay trong lòng Khung Chính khi chọn Đục lỗ Camera / Video / Chroma Key

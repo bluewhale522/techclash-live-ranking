@@ -363,6 +363,27 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // 3.6. API Lấy danh sách Video từ thư mục Google Drive (/api/drive-videos)
+  if (pathname === '/api/drive-videos' && (req.method === 'GET' || req.method === 'POST')) {
+    const folderId = parsedUrl.searchParams.get('folderId') || '1H6ROzghLVpUo17lAYFMlsWvHgLwhdD7B';
+    fetch(`https://drive.google.com/embeddedfolderview?id=${encodeURIComponent(folderId)}#list`)
+      .then(r => r.text())
+      .then(html => {
+        const videos = [];
+        const matches = [...html.matchAll(/href="https:\/\/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)[^"]*"[^>]*>[\s\S]*?<div class="flip-entry-title">([^<]+)<\/div>/g)];
+        matches.forEach(m => {
+          videos.push({ id: m[1], title: m[2].trim() });
+        });
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ ok: true, folderId, videos }));
+      })
+      .catch(err => {
+        res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ ok: false, error: err.message }));
+      });
+    return;
+  }
+
   // 4. Phục vụ file tĩnh (obs.html, admin.html, index.html, app.js, ui.js, obs-bg.jpg...)
   let safePath = pathname === '/' ? '/index.html' : pathname;
   const filePath = path.join(ROOT_DIR, decodeURIComponent(safePath));

@@ -2440,6 +2440,64 @@
       }
       showToast('👑 Đã chạy Transitions đá bay MindX sang trái & đổi Backdrop sang Logo TN! (Bấm Switch Backdrop để về nền gốc)', 'success');
     },
+    playDriveVideo(fileId, title) {
+      if (!fileId) return;
+      state.config.activeVideo = {
+        id: fileId,
+        title: title || 'Video Phỏng Vấn',
+        playId: Date.now()
+      };
+      state.config.obsMainView = 'video_full';
+      state.config.transitionTrigger = {
+        id: Date.now(),
+        title: title || 'VIDEO PHỎNG VẤN',
+        subtitle: 'MINDX THÁI NGUYÊN • TECHCLASH 2026'
+      };
+      saveState(true, false);
+      if (state.config.transitionSound !== false) {
+        this.playTransitionSFX();
+      }
+      showToast('🎬 Đang phát Full Màn Hình (Không khung OBS): ' + (title || fileId), 'success');
+    },
+    stopFullscreenVideo() {
+      state.config.obsMainView = state.config.cutoutType || 'chroma_green';
+      state.config.activeVideo = null;
+      state.config.transitionTrigger = {
+        id: Date.now(),
+        title: 'TRỞ LẠI SA BÀN THI ĐẤU',
+        subtitle: 'TECHCLASH 2026'
+      };
+      saveState(true, false);
+      if (state.config.transitionSound !== false) {
+        this.playTransitionSFX();
+      }
+      showToast('⏹ Đã tắt Video Full Màn và quay lại khung OBS!', 'info');
+    },
+    async refreshDriveVideos() {
+      try {
+        showToast('🔄 Đang quét thư mục Google Drive Video Phỏng Vấn...', 'info');
+        const res = await fetch(API_BASE + '/api/drive-videos?_t=' + Date.now());
+        const data = await res.json();
+        if (data && data.ok && Array.isArray(data.videos)) {
+          const box = document.getElementById('drive-video-buttons');
+          if (box) {
+            const btnsHtml = data.videos.map(v => {
+              const safeTitle = v.title.replace(/'/g, "\\'");
+              return `<button class="btn-xs btn-emerald" onclick="window.TCApp.playDriveVideo('${v.id}', '${safeTitle}')">▶ ${v.title}</button>`;
+            }).join('');
+            box.innerHTML = `
+              <span style="font-size:12px;font-weight:800;color:#c084fc;">🎬 VIDEO PHỎNG VẤN FULL MÀN (GOOGLE DRIVE):</span>
+              ${btnsHtml}
+              <button class="btn-xs btn-amber" onclick="window.TCApp.stopFullscreenVideo()">⏹ Tắt Video Full Màn (Về OBS)</button>
+              <button class="btn-xs btn-outline" onclick="window.TCApp.refreshDriveVideos()">🔄 Quét Lại Thư Mục Drive</button>
+            `;
+          }
+          showToast('✅ Đã tìm thấy ' + data.videos.length + ' video trong thư mục Google Drive!', 'success');
+        }
+      } catch (e) {
+        showToast('⚠️ Không quét được thư mục Drive: ' + e.message, 'error');
+      }
+    },
     toggleTransitionSound() {
       state.config.transitionSound = state.config.transitionSound === false ? true : false;
       if (window.VexIQSound) window.VexIQSound.setMuted(state.config.transitionSound === false);

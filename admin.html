@@ -286,6 +286,28 @@
         </div>
       </div>
 
+      <!-- HÀNG 2.5: PHÁT VIDEO PHỎNG VẤN GOOGLE DRIVE FULL MÀN HÌNH (KHÔNG KHUNG OBS) -->
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding-top:8px;border-top:1px solid rgba(148,163,184,0.2);">
+        <div class="obs-remote-group" id="drive-video-buttons" style="flex:1;min-width:300px;">
+          <span style="font-size:12px;font-weight:800;color:#c084fc;">🎬 VIDEO PHỎNG VẤN FULL MÀN (GOOGLE DRIVE):</span>
+          <button class="btn-xs btn-emerald" onclick="window.TCApp.playDriveVideo('1M2miGD3UmZi-q6HSN-Prr1tKlWZz5kD6', 'Góc nhìn PH')">
+            ▶ Góc nhìn PH
+          </button>
+          <button class="btn-xs btn-emerald" onclick="window.TCApp.playDriveVideo('16KrLf2GfyV-zvD3uEP5tKpT5CHpWllly', 'Hướng dẫn vexiq')">
+            ▶ Hướng dẫn vexiq
+          </button>
+          <button class="btn-xs btn-emerald" onclick="window.TCApp.playDriveVideo('1PcBDcAt_u43Y2_UG3qwf5Iaaw6beBxHn', 'Pv nhà vô địch mùa trước.mov')">
+            ▶ Pv nhà vô địch mùa trước
+          </button>
+          <button class="btn-xs btn-amber" onclick="window.TCApp.stopFullscreenVideo()" title="Tắt Video Full Màn Hình và quay lại giao diện OBS">
+            ⏹ Tắt Video Full Màn (Về OBS)
+          </button>
+          <button class="btn-xs btn-outline" onclick="window.TCApp.refreshDriveVideos()" title="Quét lại thư mục Google Drive nếu bạn vừa tải thêm video mới">
+            🔄 Quét Lại Thư Mục Drive
+          </button>
+        </div>
+      </div>
+
       <!-- HÀNG 3: QUẢN LÝ DATA, XÓA DATA, RESET THỨ TỰ TRẬN, CÀO BẢNG ĐẤU & CHỈNH TIẾN ĐỘ HIỂN THỊ -->
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding-top:8px;border-top:1px solid rgba(148,163,184,0.2);">
         <div class="obs-remote-group">

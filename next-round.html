@@ -229,14 +229,13 @@
         root.innerHTML = `
           <div class="top-bar">
             <div class="title-main">NEXT ROUND • MỜI ĐỘI CHUẨN BỊ</div>
-            <div class="match-pill">TRẬN #${nextM.matchNumber} • BẢNG ${nextM.bracket} (LƯỢT ${nextM.wave})</div>
+            <div class="match-pill">TRẬN #${nextM.matchNumber} • BẢNG ${nextM.bracket}</div>
           </div>
 
           <div class="cards-stage">
             <div class="team-card red">
-              <div class="card-side-label">SÂN ĐỎ (BÊN TRÁI) • LƯỢT ${nextM.redTurn}/2</div>
+              <div class="card-side-label">SÂN ĐỎ (BÊN TRÁI)</div>
               <div class="card-class-name">${rT.className}</div>
-              <div class="card-meta-row">${rT.code}${rT.lec ? ' • GV: ' + rT.lec : ''}</div>
               <div class="card-students">
                 <div>1. ${rT.student1}</div>
                 <div>2. ${rT.student2}</div>
@@ -246,9 +245,8 @@
             <div class="vs-badge">VS</div>
 
             <div class="team-card blue">
-              <div class="card-side-label">SÂN XANH (BÊN PHẢI) • LƯỢT ${nextM.blueTurn}/2</div>
+              <div class="card-side-label">SÂN XANH (BÊN PHẢI)</div>
               <div class="card-class-name">${bT.className}</div>
-              <div class="card-meta-row">${bT.code}${bT.lec ? ' • GV: ' + bT.lec : ''}</div>
               <div class="card-students">
                 <div>1. ${bT.student1}</div>
                 <div>2. ${bT.student2}</div>
