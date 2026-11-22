@@ -931,10 +931,12 @@
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
       <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
       <style>
-        body { font-family: 'Be Vietnam Pro', 'Segoe UI', Roboto, Arial, sans-serif; color: #0f172a; padding: 28px; max-width: 940px; margin: 0 auto; line-height: 1.45; }
+        @page { size: A4; margin: 12mm; }
+        * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        body { font-family: 'Be Vietnam Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; color: #0f172a; padding: 24px; max-width: 940px; margin: 0 auto; line-height: 1.45; }
         .header { border-bottom: 3px solid #0284c7; padding-bottom: 14px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
-        .title { font-size: 16.5pt; font-weight: 800; color: #0f172a; letter-spacing: -0.01em; }
-        .sub { font-size: 10.5pt; font-weight: 500; color: #475569; margin-top: 4px; }
+        .title { font-size: 14.5pt; font-weight: 800; color: #0f172a; letter-spacing: -0.01em; line-height: 1.25; }
+        .sub { font-size: 10pt; font-weight: 500; color: #475569; margin-top: 4px; }
         .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
         .sum-card { border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px 10px; background: #f8fafc; text-align: center; display: flex; flex-direction: column; justify-content: center; }
         .sum-label { font-size: 8.5pt; color: #64748b; text-transform: uppercase; font-weight: 700; letter-spacing: 0.03em; }
@@ -1033,7 +1035,7 @@
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
       <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
       <style>
-        body { font-family: 'Be Vietnam Pro', 'Segoe UI', Roboto, Arial, sans-serif; padding: 20px; color: #0f172a; }
+        body { font-family: 'Be Vietnam Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; padding: 20px; color: #0f172a; }
         h2, h3 { margin: 12px 0 8px; }
         table { width: 100%; border-collapse: collapse; font-size: 10pt; margin-bottom: 18px; }
         th, td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: center; }
@@ -1087,8 +1089,13 @@
     win.document.write(`
       <!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8">
       <title>Lịch Thi Đấu Chính Thức - TECHCLASH 2026</title>
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+      <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
       <style>
-        body { font-family: Arial, sans-serif; padding: 20px; color: #0f172a; }
+        @page { size: A4; margin: 12mm; }
+        * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        body { font-family: 'Be Vietnam Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; padding: 20px; color: #0f172a; }
         h2 { margin: 0 0 4px; color: #0f172a; }
         .sub { font-size: 10pt; color: #475569; margin-bottom: 14px; }
         table { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
