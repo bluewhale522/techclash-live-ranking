@@ -901,7 +901,7 @@
                 <th>Khối Đặc Biệt (+10đ)</th>
                 <th>Về Đích (+5đ)</th>
                 <th>Chế Tài Đổi Tablet / Lỗi</th>
-                <th>TỔNG ĐIỂM LƯỢT ${myTurn}</th>
+                <th>TỔNG ĐIỂM<br/>LƯỢT ${myTurn}</th>
               </tr>
             </thead>
             <tbody>
@@ -913,7 +913,7 @@
                 <td>${sheet.special > 0 && unlocked ? '✅ Đạt (+10đ)' : '0đ'}</td>
                 <td>${sheet.parked > 0 ? '✅ Đạt (+5đ)' : '0đ'}</td>
                 <td style="color:#dc2626;">${sheet.noTabletSwap > 0 ? 'Quên đổi Tablet 40-50s (-5đ)' : '0đ'} ${sheet.otherFouls > 0 ? `(-${sheet.otherFouls}đ)` : ''}</td>
-                <td style="font-size:16pt;font-weight:900;color:#0f172a;">${m.status === 'completed' ? myScore + ' điểm' : 'Chưa công bố'}</td>
+                <td style="font-size:${m.status === 'completed' ? '14pt' : '10.5pt'};font-weight:700;color:#0f172a;white-space:nowrap;">${m.status === 'completed' ? myScore + ' điểm' : 'Chưa công bố'}</td>
               </tr>
             </tbody>
           </table>
@@ -927,25 +927,28 @@
     win.document.write(`
       <!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8">
       <title>Phiếu Báo Điểm Vòng 2 - ${teamStat.className}</title>
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+      <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
       <style>
-        body { font-family: Arial, sans-serif; color: #0f172a; padding: 28px; max-width: 920px; margin: 0 auto; }
-        .header { border-bottom: 3px solid #0284c7; padding-bottom: 14px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; }
-        .title { font-size: 18pt; font-weight: 900; color: #0f172a; }
-        .sub { font-size: 11pt; color: #475569; margin-top: 4px; }
+        body { font-family: 'Be Vietnam Pro', 'Segoe UI', Roboto, Arial, sans-serif; color: #0f172a; padding: 28px; max-width: 940px; margin: 0 auto; line-height: 1.45; }
+        .header { border-bottom: 3px solid #0284c7; padding-bottom: 14px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+        .title { font-size: 16.5pt; font-weight: 800; color: #0f172a; letter-spacing: -0.01em; }
+        .sub { font-size: 10.5pt; font-weight: 500; color: #475569; margin-top: 4px; }
         .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
-        .sum-card { border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; background: #f8fafc; text-align: center; }
-        .sum-label { font-size: 9.5pt; color: #64748b; text-transform: uppercase; font-weight: bold; }
-        .sum-val { font-size: 16pt; font-weight: 900; color: #0284c7; margin-top: 4px; }
+        .sum-card { border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px 10px; background: #f8fafc; text-align: center; display: flex; flex-direction: column; justify-content: center; }
+        .sum-label { font-size: 8.5pt; color: #64748b; text-transform: uppercase; font-weight: 700; letter-spacing: 0.03em; }
+        .sum-val { font-size: 15pt; font-weight: 800; color: #0284c7; margin-top: 5px; line-height: 1.3; }
         .match-box { border: 1px solid #94a3b8; border-radius: 10px; padding: 14px; margin-bottom: 16px; }
-        .match-head { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 11pt; border-bottom: 1px dashed #cbd5e1; padding-bottom: 6px; }
-        table { width: 100%; border-collapse: collapse; font-size: 10.5pt; }
-        th, td { border: 1px solid #cbd5e1; padding: 8px; text-align: center; }
-        th { background: #e2e8f0; font-weight: bold; }
+        .match-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 10.5pt; border-bottom: 1px dashed #cbd5e1; padding-bottom: 6px; }
+        table { width: 100%; border-collapse: collapse; font-size: 10pt; }
+        th, td { border: 1px solid #cbd5e1; padding: 8px 6px; text-align: center; }
+        th { background: #e2e8f0; font-weight: 700; font-size: 9.5pt; }
         .no-print { margin-bottom: 16px; text-align: right; }
         @media print { .no-print { display: none; } }
       </style></head><body>
       <div class="no-print">
-        <button onclick="window.print()" style="padding:10px 18px;background:#0284c7;color:#fff;border:none;border-radius:6px;font-weight:bold;cursor:pointer;">
+        <button onclick="window.print()" style="padding:10px 18px;background:#0284c7;color:#fff;border:none;border-radius:6px;font-family:inherit;font-weight:700;cursor:pointer;">
           🖨 In / Lưu thành File PDF (Gửi Phụ Huynh)
         </button>
       </div>
@@ -954,20 +957,20 @@
           <div class="title">PHIẾU KẾT QUẢ THI ĐẤU CHÍNH THỨC — TECH CLASH: FINALE 2026</div>
           <div class="sub">Vòng 2: Chung Kết Đồng Đội • MindX Tech &amp; AI School</div>
         </div>
-        <div style="text-align:right;font-size:10pt;color:#475569;">
-          Ngày xuất: ${new Date().toLocaleString('vi-VN')}
+        <div style="text-align:right;font-size:9.5pt;color:#475569;white-space:nowrap;">
+          Ngày xuất:<br/>${new Date().toLocaleString('vi-VN')}
         </div>
       </div>
 
       <div class="summary-grid">
         <div class="sum-card">
           <div class="sum-label">Đội Tuyển / Lớp</div>
-          <div class="sum-val" style="color:#0f172a;font-size:13pt;">${teamStat.className} (${teamStat.code})</div>
-          <div style="font-size:9.5pt;color:#475569;margin-top:3px;">${teamStat.bracket === 'A' ? 'Bảng A - Junior (VEX GO)' : 'Bảng B - Teen (VEX IQ)'}</div>
+          <div class="sum-val" style="color:#0f172a;font-size:12pt;">${teamStat.className}<br/><span style="font-size:10.5pt;color:#475569;">(${teamStat.code})</span></div>
+          <div style="font-size:9pt;color:#475569;margin-top:3px;">${teamStat.bracket === 'A' ? 'Bảng A - Junior (VEX GO)' : 'Bảng B - Teen (VEX IQ)'}</div>
         </div>
         <div class="sum-card">
           <div class="sum-label">2 Học Sinh Đại Diện</div>
-          <div class="sum-val" style="color:#0f172a;font-size:11.5pt;">${teamStat.student1}<br/>${teamStat.student2}</div>
+          <div class="sum-val" style="color:#0f172a;font-size:10.5pt;font-weight:700;">${teamStat.student1}<br/>${teamStat.student2}</div>
         </div>
         <div class="sum-card">
           <div class="sum-label">Tổng Điểm 2 Lượt Vòng 2</div>
@@ -1026,8 +1029,11 @@
     win.document.write(`
       <!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8">
       <title>Báo Cáo Tổng Hợp Vòng 2 - TECH CLASH 2026</title>
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+      <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
       <style>
-        body { font-family: Arial, sans-serif; padding: 20px; color: #0f172a; }
+        body { font-family: 'Be Vietnam Pro', 'Segoe UI', Roboto, Arial, sans-serif; padding: 20px; color: #0f172a; }
         h2, h3 { margin: 12px 0 8px; }
         table { width: 100%; border-collapse: collapse; font-size: 10pt; margin-bottom: 18px; }
         th, td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: center; }
@@ -1294,34 +1300,68 @@
     const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
     const parsed = [];
 
+    const cleanValList = (arr, clsName) => arr
+      .map(s => String(s || '').trim())
+      .filter(s => {
+        if (!s) return false;
+        if (/^(true|false|forms|tham gia|đã liên hệ|chưa liên hệ)$/i.test(s)) return false;
+        if (/^https?:\/\//i.test(s)) return false;
+        if (/^\d+$/.test(s) || /^84\d{7,}$/.test(s)) return false;
+        if (/^đội\s*\d+/i.test(s)) return false;
+        if (clsName && clsName.includes(s.toUpperCase()) && s.length <= 10) return false;
+        return true;
+      });
+
     for (let i = 0; i < lines.length; i++) {
-      const cols = lines[i].split(/\t|,|;|\|/).map(s => s.trim()).filter(Boolean);
+      const hasTab = lines[i].includes('\t');
+      const rawCols = (hasTab ? lines[i].split('\t') : lines[i].split(/,|;|\|/)).map(s => s.trim());
+      const cols = rawCols.filter(Boolean);
       if (cols.length === 0) continue;
 
-      // Tìm cột chứa tên lớp (VD: TN-ROB-..., TN-C4K-...) hoặc lấy cột đầu tiên
-      let clsIdx = cols.findIndex(c => /^TN-(ROB|C4K)-/i.test(c));
-      if (clsIdx !== -1) {
-        const className = cols[clsIdx].toUpperCase();
-        const afterCols = cols.slice(clsIdx + 1).filter(x => isNaN(Number(x)) && !/^đội\s*\d+/i.test(x));
-        let student1 = afterCols[0] || 'Học sinh 1';
-        let student2 = afterCols[1] || '';
+      // Tìm cột chứa tên lớp (VD: TN-ROB-..., TN-C4K-...)
+      const clsIdxRaw = rawCols.findIndex(c => /^TN-(ROB|C4K)-/i.test(c));
+      if (clsIdxRaw !== -1) {
+        const className = rawCols[clsIdxRaw].toUpperCase();
+        const afterClean = cleanValList(rawCols.slice(clsIdxRaw + 1), className);
 
-        // Nếu dòng tiếp theo chỉ có 1 cột tên học sinh 2 (như cấu trúc gộp ô 2 dòng của Google Sheet)
-        if (!student2 && i + 1 < lines.length) {
-          const nextCols = lines[i + 1].split(/\t|,|;|\|/).map(s => s.trim()).filter(Boolean);
-          const hasNextClass = nextCols.some(c => /^TN-(ROB|C4K)-/i.test(c));
-          if (!hasNextClass && nextCols.length > 0) {
-            student2 = nextCols[nextCols.length - 1];
-            i++;
+        let lec = '';
+        let student1 = '';
+        let student2 = '';
+
+        // Kiểm tra dòng tiếp theo xem có phải dòng học sinh 2 của cấu trúc gộp ô 2 dòng từ Google Sheet không
+        let nextStudent = '';
+        if (i + 1 < lines.length) {
+          const nextHasTab = lines[i + 1].includes('\t');
+          const nextRaw = (nextHasTab ? lines[i + 1].split('\t') : lines[i + 1].split(/,|;|\|/)).map(s => s.trim());
+          const hasNextClass = nextRaw.some(c => /^TN-(ROB|C4K)-/i.test(c));
+          if (!hasNextClass) {
+            const nextClean = cleanValList(nextRaw, className);
+            if (nextClean.length > 0) {
+              nextStudent = nextClean[0];
+            }
           }
         }
-        parsed.push({ className, student1, student2: student2 || 'Học sinh 2' });
+
+        if (nextStudent) {
+          student2 = nextStudent;
+          student1 = afterClean.length > 0 ? afterClean[afterClean.length - 1] : 'Học sinh 1';
+          if (afterClean.length >= 2) lec = afterClean[0];
+          i++;
+        } else {
+          student1 = afterClean[0] || 'Học sinh 1';
+          student2 = afterClean[1] || 'Học sinh 2';
+        }
+        parsed.push({ className, lec, student1: student1.replace(/^NNguyễn/, 'Nguyễn'), student2 });
       } else if (cols.length >= 2 && !/^bảng|hạng|mã|stt/i.test(cols[0])) {
-        parsed.push({
-          className: cols[0].toUpperCase(),
-          student1: cols[1] || 'Học sinh 1',
-          student2: cols[2] || 'Học sinh 2'
-        });
+        const cleaned = cleanValList(cols, '');
+        if (cleaned.length >= 2) {
+          parsed.push({
+            className: cleaned[0].toUpperCase(),
+            lec: '',
+            student1: cleaned[1] || 'Học sinh 1',
+            student2: cleaned[2] || 'Học sinh 2'
+          });
+        }
       }
     }
 
@@ -1339,7 +1379,7 @@
         bracket: bracketCode,
         seed: idx + 1,
         className: item.className,
-        lec: '',
+        lec: item.lec || '',
         student1: item.student1,
         student2: item.student2,
         v1Avg: 20,

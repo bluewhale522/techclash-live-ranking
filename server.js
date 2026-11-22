@@ -318,14 +318,30 @@ const server = http.createServer((req, res) => {
             });
           }
 
-          const lB = cell(c, 11), clsB = cell(c, 12), lecB = cell(c, 16), s1B = cell(c, 17), s2B = cell(cn, 17);
-          if ((lB.toLowerCase().startsWith('đội') || /^B\d+/i.test(lB)) && clsB) {
+          const lB_col = (() => {
+            for (let col = 8; col < c.length - 1; col++) {
+              const v = cell(c, col);
+              if ((v.toLowerCase().startsWith('đội') || /^B\d+/i.test(v)) && cell(c, col + 1)) return col;
+            }
+            return -1;
+          })();
+          if (lB_col !== -1) {
+            const lB = cell(c, lB_col);
+            const clsB = cell(c, lB_col + 1);
+            const isNameVal = (s) => s && !/^(true|false|forms|tham gia|đã liên hệ|chưa liên hệ)$/i.test(s) && !/^https?:\/\//i.test(s) && !/^\d+$/.test(s) && s.includes(' ');
+            let sColB = lB_col + 6;
+            if (!isNameVal(cell(c, sColB)) && !isNameVal(cell(cn, sColB)) && isNameVal(cell(c, lB_col + 5))) {
+              sColB = lB_col + 5;
+            }
+            const lecB = cell(c, sColB - 1);
+            const s1B = cell(c, sColB);
+            const s2B = cell(cn, sColB);
             const [v1s1, v1s2] = (!s1B || !s2B) ? await getTop2FromV1(clsB) : ['', ''];
             teamsB.push({
               code: lB,
               className: clsB.toUpperCase(),
               lec: lecB || '',
-              student1: s1B || v1s1 || 'Chờ cập nhật',
+              student1: (s1B || v1s1 || 'Chờ cập nhật').replace(/^NNguyễn/, 'Nguyễn'),
               student2: s2B || v1s2 || 'Chờ cập nhật'
             });
           }
