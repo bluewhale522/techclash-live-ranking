@@ -1084,11 +1084,11 @@
           <td>Lượt ${m.wave}</td>
           <td><span class="pill ${m.bracket === 'A' ? 'pa' : 'pb'}">${m.bracket === 'A' ? 'Bảng A (VEX GO)' : 'Bảng B (VEX IQ)'}</span></td>
           <td style="text-align:left;background:#fff5f5;">
-            <b style="color:#b91c1c;">${rT.className}</b> <small>(${rT.code} • L${m.redTurn})</small><br/>
+            <b style="color:#b91c1c;">${rT.className}</b> <small>(${rT.code})</small><br/>
             <span style="font-size:9pt;color:#334155;">${rT.student1} — ${rT.student2}</span>
           </td>
           <td style="text-align:left;background:#f0f9ff;">
-            <b style="color:#0369a1;">${bT.className}</b> <small>(${bT.code} • L${m.blueTurn})</small><br/>
+            <b style="color:#0369a1;">${bT.className}</b> <small>(${bT.code})</small><br/>
             <span style="font-size:9pt;color:#334155;">${bT.student1} — ${bT.student2}</span>
           </td>
           <td>${stText}</td>
