@@ -2350,9 +2350,6 @@
     publishScoreToOBS: publishScoreToOBSScreen,
     advanceNextRound: advanceToNextRoundOnArena,
     setOBSView(viewMode) {
-      if (viewMode !== 'video_full' && this.stopAdminVideoMonitor) {
-        this.stopAdminVideoMonitor();
-      }
       const tInput = document.getElementById('admin-transition-title');
       const sInput = document.getElementById('admin-transition-sub');
       if (tInput && tInput.value.trim()) state.config.transitionTitle = tInput.value.trim();
@@ -2444,34 +2441,6 @@
       }
       showToast('👑 Đã chạy Transitions đá bay MindX sang trái & đổi Backdrop sang Logo TN! (Bấm Switch Backdrop để về nền gốc)', 'success');
     },
-    startAdminVideoMonitor(srcPath, title) {
-      const monitor = document.getElementById('admin-video-monitor');
-      const player = document.getElementById('admin-video-player');
-      const status = document.getElementById('admin-video-status');
-      if (!player) return;
-      if (monitor) monitor.style.display = 'flex';
-      if (status) status.textContent = '🔊 Đang phát loa Admin: ' + (title || 'Video');
-      player.muted = false;
-      player.volume = 1.0;
-      player.src = srcPath;
-      player.load();
-      player.play().catch(err => {
-        console.warn('Admin video play error:', err);
-      });
-      player.onended = () => {
-        if (status) status.textContent = '⏹ Đã phát xong: ' + (title || 'Video');
-      };
-    },
-    stopAdminVideoMonitor() {
-      const monitor = document.getElementById('admin-video-monitor');
-      const player = document.getElementById('admin-video-player');
-      if (player) {
-        player.pause();
-        player.removeAttribute('src');
-        player.load();
-      }
-      if (monitor) monitor.style.display = 'none';
-    },
     playLocalVideo(srcPath, title) {
       if (!srcPath) return;
       state.config.activeVideo = {
@@ -2486,11 +2455,7 @@
         subtitle: 'MINDX THÁI NGUYÊN • TECHCLASH 2026'
       };
       saveState(true, false);
-      if (state.config.transitionSound !== false) {
-        this.playTransitionSFX();
-      }
-      this.startAdminVideoMonitor(srcPath, title);
-      showToast('🎬 Đang phát Full Màn Hình + Loa Admin: ' + (title || srcPath), 'success');
+      showToast('🎬 Đang phát Full Màn Hình trực tiếp lên OBS: ' + (title || srcPath), 'success');
     },
     playDriveVideo(fileId, title) {
       if (!fileId) return;
@@ -2512,7 +2477,6 @@
       showToast('🎬 Đang phát Full Màn Hình (Không khung OBS): ' + (title || fileId), 'success');
     },
     stopFullscreenVideo() {
-      this.stopAdminVideoMonitor();
       state.config.obsMainView = state.config.cutoutType || 'chroma_green';
       state.config.activeVideo = null;
       state.config.transitionTrigger = {
@@ -2521,9 +2485,6 @@
         subtitle: 'TECHCLASH 2026'
       };
       saveState(true, false);
-      if (state.config.transitionSound !== false) {
-        this.playTransitionSFX();
-      }
       showToast('⏹ Đã tắt Video Full Màn và quay lại khung OBS!', 'info');
     },
     async refreshDriveVideos() {
@@ -2577,73 +2538,7 @@
       }, 1100 + 10 * 850);
     },
     playTransitionSFX() {
-      try {
-        if (!window._tcStingerWavUrl) {
-          const sampleRate = 44100;
-          const duration = 3.0;
-          const numSamples = Math.floor(sampleRate * duration);
-          const buffer = new ArrayBuffer(44 + numSamples * 2);
-          const view = new DataView(buffer);
-          const writeStr = (off, s) => { for (let i = 0; i < s.length; i++) view.setUint8(off + i, s.charCodeAt(i)); };
-          writeStr(0, 'RIFF');
-          view.setUint32(4, 36 + numSamples * 2, true);
-          writeStr(8, 'WAVE');
-          writeStr(12, 'fmt ');
-          view.setUint32(16, 16, true);
-          view.setUint16(20, 1, true);
-          view.setUint16(22, 1, true);
-          view.setUint32(24, sampleRate, true);
-          view.setUint32(28, sampleRate * 2, true);
-          view.setUint16(32, 2, true);
-          view.setUint16(34, 16, true);
-          writeStr(36, 'data');
-          view.setUint32(40, numSamples * 2, true);
-
-          let noiseState = 0, phaseSub = 0, phaseRiser = 0, phaseC1 = 0, phaseC2 = 0, phaseC3 = 0;
-          for (let i = 0; i < numSamples; i++) {
-            const t = i / sampleRate;
-            let sample = 0;
-            const white = Math.random() * 2 - 1;
-            if (t < 0.45) {
-              const env = Math.sin((t / 0.45) * Math.PI);
-              const alpha = 0.08 + 0.35 * (t / 0.45);
-              noiseState = noiseState + alpha * (white - noiseState);
-              const riserFreq = 110 * Math.pow(4.0, t / 0.45);
-              phaseRiser += (2 * Math.PI * riserFreq) / sampleRate;
-              sample += noiseState * env * 0.55 + Math.sin(phaseRiser) * env * 0.3;
-            }
-            if (t >= 0.36 && t < 1.95) {
-              const dt = t - 0.36;
-              const boomEnv = Math.exp(-dt * 4.5);
-              const subFreq = 42 + 115 * Math.exp(-dt * 14);
-              phaseSub += (2 * Math.PI * subFreq) / sampleRate;
-              const subWave = Math.sin(phaseSub) * boomEnv * 0.75;
-              const chordEnv = Math.min(1, dt / 0.03) * Math.exp(-dt * 2.1);
-              phaseC1 += (2 * Math.PI * 261.63) / sampleRate;
-              phaseC2 += (2 * Math.PI * 392.00) / sampleRate;
-              phaseC3 += (2 * Math.PI * 523.25) / sampleRate;
-              const chordWave = (Math.sin(phaseC1) * 0.35 + Math.sin(phaseC2) * 0.3 + Math.sin(phaseC3) * 0.25) * chordEnv * 0.45;
-              const hitEnv = Math.exp(-dt * 22);
-              sample += subWave + chordWave + white * hitEnv * 0.35;
-            }
-            if (t >= 2.15 && t < 2.95) {
-              const dt2 = (t - 2.15) / 0.8;
-              const env2 = Math.sin(dt2 * Math.PI);
-              const alpha2 = 0.4 - 0.32 * dt2;
-              noiseState = noiseState + alpha2 * (white - noiseState);
-              const dropFreq = 360 * Math.pow(0.35, dt2);
-              phaseRiser += (2 * Math.PI * dropFreq) / sampleRate;
-              sample += noiseState * env2 * 0.5 + Math.sin(phaseRiser) * env2 * 0.22;
-            }
-            const clamped = Math.max(-1, Math.min(1, sample * 0.9));
-            view.setInt16(44 + i * 2, clamped < 0 ? clamped * 0x8000 : clamped * 0x7FFF, true);
-          }
-          window._tcStingerWavUrl = URL.createObjectURL(new Blob([buffer], { type: 'audio/wav' }));
-        }
-        const audio = new Audio(window._tcStingerWavUrl);
-        audio.volume = 0.85;
-        audio.play().catch(() => {});
-      } catch (e) {}
+      // Đã tắt toàn bộ âm thanh trên trang Admin — chỉ phát trực tiếp trên các màn OBS
     },
     getAdminPin() {
       return state.config.adminPin || '2026';
