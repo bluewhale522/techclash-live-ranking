@@ -1127,7 +1127,7 @@
 
     <!-- Lớp Phát Video Phỏng Vấn Full Màn Hình (Che hoàn toàn khung OBS, không viền, phát trực tiếp từ Server) -->
     <div id="fullscreen-video-overlay" style="display:none;position:fixed;inset:0;width:100vw;height:100vh;background:#000;z-index:8500;">
-      <video id="fullscreen-video-player" src="" style="width:100%;height:100%;object-fit:contain;background:#000;" autoplay playsinline controls="false"></video>
+      <video id="fullscreen-video-player" style="width:100%;height:100%;object-fit:contain;background:#000;" autoplay playsinline preload="auto"></video>
     </div>
 
     <!-- Tiêu đề HUD trên đỉnh: Dòng 1 TECHCLASH 2026, Dòng 2 ĐỎ vs XANH & Tiến độ -->
@@ -1440,24 +1440,31 @@
         if (fvOv && fvPlayer) {
           if (viewMode === 'video_full' && state.config.activeVideo && (state.config.activeVideo.src || state.config.activeVideo.id)) {
             const playKey = String(state.config.activeVideo.playId || state.config.activeVideo.src || state.config.activeVideo.id);
+            fvOv.style.display = 'block';
             if (fvOv.getAttribute('data-play-key') !== playKey) {
               fvOv.setAttribute('data-play-key', playKey);
               fvPlayer.src = state.config.activeVideo.src || ('videos/' + state.config.activeVideo.id);
-              fvPlayer.currentTime = 0;
               fvPlayer.muted = false;
-              const p = fvPlayer.play();
-              if (p && typeof p.catch === 'function') {
-                p.catch(() => {
-                  fvPlayer.muted = true;
-                  fvPlayer.play().catch(() => {});
-                });
-              }
+              fvPlayer.load();
+              const tryPlay = () => {
+                const p = fvPlayer.play();
+                if (p && typeof p.catch === 'function') {
+                  p.catch(() => {
+                    fvPlayer.muted = true;
+                    fvPlayer.play().catch(() => {});
+                  });
+                }
+              };
+              tryPlay();
+              fvPlayer.oncanplay = () => {
+                if (fvPlayer.paused) tryPlay();
+              };
             }
-            fvOv.style.display = 'block';
           } else {
             fvOv.style.display = 'none';
             if (fvOv.getAttribute('data-play-key')) {
               fvOv.removeAttribute('data-play-key');
+              fvPlayer.oncanplay = null;
               try { fvPlayer.pause(); } catch (e) {}
               fvPlayer.removeAttribute('src');
               fvPlayer.load();
