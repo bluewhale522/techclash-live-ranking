@@ -2357,7 +2357,7 @@
       const sInput = document.getElementById('admin-transition-sub');
       if (tInput && tInput.value.trim()) state.config.transitionTitle = tInput.value.trim();
       if (sInput && sInput.value.trim()) state.config.transitionSub = sInput.value.trim();
-      if (viewMode === 'chroma_green' || viewMode === 'camera' || viewMode === 'cutout_clean') {
+      if (viewMode === 'chroma_green' || viewMode === 'camera' || viewMode === 'camera_full' || viewMode === 'cutout_clean') {
         state.config.cutoutType = viewMode;
       }
       state.config.obsMainView = viewMode;
@@ -2381,6 +2381,7 @@
         ranking_split: 'Bảng Xếp Hạng Bảng A',
         result: 'Kết Quả Trận Đấu',
         camera: 'Đục Lỗ Alpha + Giữ Khung Chữ Trên Đầu',
+        camera_full: 'Video To Toàn Màn (Chỉ Khung Đội)',
         cutout_clean: 'Đục Lỗ Trống 100% Khung Lớn',
         chroma_green: 'Đục Lỗ Xanh Lá (Chroma Key) + Giữ Khung Chữ Trên Đầu'
       };
