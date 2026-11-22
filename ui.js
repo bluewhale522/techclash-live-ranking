@@ -2381,7 +2381,7 @@
         ranking_split: 'Bảng Xếp Hạng Bảng A',
         result: 'Kết Quả Trận Đấu',
         camera: 'Đục Lỗ Alpha + Giữ Khung Chữ Trên Đầu',
-        camera_full: 'Video To Toàn Màn (Chỉ Khung Đội)',
+        camera_full: 'Video To Toàn Màn (Full Khung, Không Chữ)',
         cutout_clean: 'Đục Lỗ Trống 100% Khung Lớn',
         chroma_green: 'Đục Lỗ Xanh Lá (Chroma Key) + Giữ Khung Chữ Trên Đầu'
       };

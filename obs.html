@@ -1708,7 +1708,11 @@
           el.innerHTML = '';
           return;
         }
-        if (viewMode === 'camera' || viewMode === 'camera_full' || viewMode === 'arena') {
+        if (viewMode === 'camera_full') {
+          el.innerHTML = `<div class="arena-video-hole"></div>`;
+          return;
+        }
+        if (viewMode === 'camera' || viewMode === 'arena') {
           el.innerHTML = `
             ${matchStripHtml}
             <div class="arena-video-hole"></div>
