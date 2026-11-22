@@ -122,9 +122,19 @@
     fetch(API_BASE + '/api/state?_t=' + Date.now(), { cache: 'no-store' })
       .then(r => r.json())
       .then(res => {
-        if (res && res.state) {
-          state = res.state;
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        if (res && res.state && Array.isArray(res.state.teams) && res.state.teams.length > 0) {
+          const localTs = state && state.lastUpdated ? Date.parse(state.lastUpdated) || 0 : 0;
+          const serverTs = res.state.lastUpdated ? Date.parse(res.state.lastUpdated) || 0 : 0;
+          if (serverTs >= localTs) {
+            state = res.state;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          } else {
+            fetch(API_BASE + '/api/state', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ state })
+            }).catch(() => {});
+          }
         } else {
           fetch(API_BASE + '/api/state', {
             method: 'POST',
