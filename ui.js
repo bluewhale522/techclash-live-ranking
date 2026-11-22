@@ -483,13 +483,13 @@
     state.config.obsMainView = 'result';
 
     saveState(true, true);
-    showToast('🚀 ĐÃ CHỐT & HIỂN THỊ ĐIỂM TRẬN #' + m.matchNumber + ' (Tự động chuyển sang trận tiếp theo sau 5 giây...)', 'success');
+    showToast('🚀 ĐÃ CHỐT & HIỂN THỊ ĐIỂM TRẬN #' + m.matchNumber + ' (Tự động chuyển sang trận tiếp theo sau 10 giây...)', 'success');
 
     if (autoNextAfterResultTimer) clearTimeout(autoNextAfterResultTimer);
     autoNextAfterResultTimer = setTimeout(() => {
       autoNextAfterResultTimer = null;
       advanceToNextRoundOnArena(matchId);
-    }, 5000);
+    }, 10000);
   }
 
   function advanceToNextRoundOnArena(matchId) {
