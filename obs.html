@@ -1482,14 +1482,25 @@
         } catch (e) {}
       }
 
-      // Tự động mở khóa âm thanh trên trình duyệt khi có tương tác đầu tiên
-      ['click', 'keydown', 'touchstart'].forEach(evt => {
-        window.addEventListener(evt, () => {
-          buildStingerWavUrl();
-          if (stingerAudioCtx && stingerAudioCtx.state === 'suspended') {
-            stingerAudioCtx.resume().catch(() => {});
-          }
-        }, { once: true });
+      // Tự động mở khóa âm thanh trên trình duyệt khi có tương tác đầu tiên bất kỳ trên màn OBS
+      function unlockObsAudioAndVideo() {
+        buildStingerWavUrl();
+        if (stingerAudioCtx && stingerAudioCtx.state === 'suspended') {
+          stingerAudioCtx.resume().catch(() => {});
+        }
+        if (window.VexIQSound && window.VexIQSound.unlock) {
+          try { window.VexIQSound.unlock(); } catch (e) {}
+        }
+        const fvPlayer = document.getElementById('fullscreen-video-player');
+        const unmuteBtn = document.getElementById('btn-unmute-video');
+        if (fvPlayer && fvPlayer.muted) {
+          fvPlayer.muted = false;
+          fvPlayer.volume = 1.0;
+          if (unmuteBtn) unmuteBtn.style.display = 'none';
+        }
+      }
+      ['pointerdown', 'click', 'keydown', 'touchstart'].forEach(evt => {
+        window.addEventListener(evt, unlockObsAudioAndVideo, { passive: true });
       });
 
       function triggerStingerOverlay(titleText, subText, mode) {
@@ -1573,17 +1584,19 @@
                 if (p && typeof p.then === 'function') {
                   p.then(() => {
                     if (unmuteBtn) unmuteBtn.style.display = 'none';
-                  }).catch(() => {
-                    fvPlayer.muted = true;
-                    if (unmuteBtn) unmuteBtn.style.display = 'block';
-                    fvPlayer.play().catch(() => {});
+                  }).catch(err => {
+                    if (err && err.name === 'NotAllowedError') {
+                      fvPlayer.muted = true;
+                      if (unmuteBtn) unmuteBtn.style.display = 'block';
+                      fvPlayer.play().catch(() => {});
+                    }
                   });
                 }
               };
-              tryPlay();
               fvPlayer.oncanplay = () => {
-                if (fvPlayer.paused) tryPlay();
+                if (fvPlayer.paused || fvPlayer.muted) tryPlay();
               };
+              tryPlay();
             }
           } else {
             fvOv.style.display = 'none';
