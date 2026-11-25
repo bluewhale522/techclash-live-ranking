@@ -887,17 +887,23 @@
       animation-duration: 4.2s;
     }
     .box-bottom-ticker::before {
-      padding: 2px;
+      padding: 3px;
+      z-index: 20;
       background: conic-gradient(
         from var(--tc-border-angle),
-        transparent 0deg,
-        transparent 215deg,
-        rgba(239, 68, 68, 0.5) 250deg,
-        #67e8f9 300deg,
-        #ffffff 345deg,
-        transparent 360deg
+        rgba(239, 68, 68, 0.25) 0deg,
+        #ef4444 35deg,
+        #fbbf24 75deg,
+        #ffffff 100deg,
+        rgba(56, 189, 248, 0.25) 140deg,
+        rgba(56, 189, 248, 0.25) 180deg,
+        #38bdf8 215deg,
+        #67e8f9 255deg,
+        #ffffff 280deg,
+        rgba(239, 68, 68, 0.25) 320deg,
+        rgba(239, 68, 68, 0.25) 360deg
       );
-      animation-duration: 4.6s;
+      animation-duration: 3.5s;
     }
     .box-bottom-right::before {
       background: conic-gradient(
