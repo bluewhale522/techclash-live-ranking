@@ -845,8 +845,10 @@
       backdrop-filter: blur(3px);
       overflow: hidden;
     }
+    .box-main-left::before,
     .box-top-right::before,
-    .box-bottom-right::before {
+    .box-bottom-right::before,
+    .box-bottom-ticker::before {
       content: "";
       position: absolute;
       inset: 0;
@@ -869,6 +871,33 @@
       animation: tcBorderChase 3.2s linear infinite;
       pointer-events: none;
       z-index: 10;
+    }
+    .box-main-left::before {
+      padding: 3px;
+      background: conic-gradient(
+        from var(--tc-border-angle),
+        transparent 0deg,
+        transparent 200deg,
+        rgba(239, 68, 68, 0.55) 240deg,
+        #fbbf24 285deg,
+        #67e8f9 325deg,
+        #ffffff 348deg,
+        transparent 360deg
+      );
+      animation-duration: 4.2s;
+    }
+    .box-bottom-ticker::before {
+      padding: 2px;
+      background: conic-gradient(
+        from var(--tc-border-angle),
+        transparent 0deg,
+        transparent 215deg,
+        rgba(239, 68, 68, 0.5) 250deg,
+        #67e8f9 300deg,
+        #ffffff 345deg,
+        transparent 360deg
+      );
+      animation-duration: 4.6s;
     }
     .box-bottom-right::before {
       background: conic-gradient(
